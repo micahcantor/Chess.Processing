@@ -127,6 +127,26 @@ class Piece
     YChange = FinalSquareY - InitSquareY;
   }
   
+  boolean OnAttackedSquare(ArrayList<Square> AttackedSquaresWhite, ArrayList<Square> AttackedSquaresBlack)
+  {
+    if (isBlack)
+    {
+      for (Square s : AttackedSquaresBlack)
+      {
+        if (s.x == this.x && s.y == this.y)
+          return true;
+      }
+    }
+    else
+    {
+      for (Square s : AttackedSquaresWhite)
+      {
+        if (s.x == this.x && s.y == this.y)
+          return true;
+      }
+    }
+    return false;
+  }
   boolean over(int mousex, int mousey)
   {
     return(mousex >= x && mousex <= x + 60 && mousey >= y && mousey <= y + 60);

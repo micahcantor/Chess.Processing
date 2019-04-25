@@ -5,6 +5,9 @@ class King extends Piece
 {
   PImage KingImage;
   boolean InCheck;
+  boolean NoLegalMovesBlack, NoLegalMovesWhite;
+  boolean AttackingPieceUncaptureableBlack, AttackingPieceUncaptureableWhite;
+  ArrayList <Piece> AttackedByThesePieces = new ArrayList<Piece>();
   
   public King(PImage _KingImage, boolean _isBlack, float _x, float _y)
   {
@@ -47,12 +50,145 @@ class King extends Piece
   
   void OutOfCheck(ArrayList AttackedSquaresWhite, ArrayList AttackedSquaresBlack)
   {
-    System.out.println(InCheck);
     if (this.InCheck == true && IsSquareAttacked(AttackedSquaresWhite, AttackedSquaresBlack) == false)
+    {
       this.InCheck = false;
-    System.out.println(InCheck);
+      AttackedByThesePieces.clear();
+    }
   }
   
+  void Checkmate(SquareCollection board)
+  {
+    //If you cannot move to any unattacked squares
+    CheckLegalKingMoves(board);
+    //If the attacking piece is not on an attacked square for their color
+    IsPieceCaptureable(board);            
+    //If the move cannot be blocked
+  }
+  
+  void CheckLegalKingMoves(SquareCollection board)
+  {
+    int X = board.GetXIndexMouse(this.x);
+    int Y = board.GetYIndexMouse(this.y);
+    int IllegalSquareCounterBlack = 0, IllegalSquareCounterWhite = 0;
+    Square [][] squares = board.squares;
+    
+    if (isBlack)
+    {
+      try {
+        if (board.AttackedSquaresBlack.contains(squares[X][Y+1]) || squares[X][Y+1].OccupiedBlack)
+          IllegalSquareCounterBlack++;
+      } catch (ArrayIndexOutOfBoundsException e){ 
+          IllegalSquareCounterBlack++; 
+      }
+      
+      try {
+        if (board.AttackedSquaresBlack.contains(squares[X][Y-1]) || squares[X][Y-1].OccupiedBlack)
+          IllegalSquareCounterBlack++;
+      } catch (ArrayIndexOutOfBoundsException e){ 
+          IllegalSquareCounterBlack++; 
+      }
+      
+      try {
+        if (board.AttackedSquaresBlack.contains(squares[X-1][Y+1]) || squares[X-1][Y+1].OccupiedBlack)
+          IllegalSquareCounterBlack++;
+      } catch (ArrayIndexOutOfBoundsException e){ 
+          IllegalSquareCounterBlack++; 
+      }
+      
+      try {
+        if (board.AttackedSquaresBlack.contains(squares[X-1][Y]) || squares[X-1][Y].OccupiedBlack)
+          IllegalSquareCounterBlack++;
+      } catch (ArrayIndexOutOfBoundsException e){ 
+          IllegalSquareCounterBlack++; 
+      }
+      
+      try {
+        if (board.AttackedSquaresBlack.contains(squares[X+1][Y]) || squares[X+1][Y].OccupiedBlack)
+          IllegalSquareCounterBlack++;
+      } catch (ArrayIndexOutOfBoundsException e){ 
+          IllegalSquareCounterBlack++; 
+      }
+      try {
+        if (board.AttackedSquaresBlack.contains(squares[X+1][Y+1]) || squares[X+1][Y+1].OccupiedBlack)
+          IllegalSquareCounterBlack++;
+      } catch (ArrayIndexOutOfBoundsException e){ 
+          IllegalSquareCounterBlack++; 
+      }
+      
+      if (IllegalSquareCounterBlack == 6)
+        NoLegalMovesBlack = true;
+    }
+    else 
+    {
+      try {
+        if (board.AttackedSquaresWhite.contains(squares[X][Y+1]) || squares[X][Y+1].OccupiedBlack)
+          IllegalSquareCounterWhite++;
+      } catch (ArrayIndexOutOfBoundsException e){ 
+          IllegalSquareCounterWhite++; 
+      }
+      
+      try {
+        if (board.AttackedSquaresWhite.contains(squares[X][Y-1]) || squares[X][Y-1].OccupiedBlack)
+          IllegalSquareCounterWhite++;
+      } catch (ArrayIndexOutOfBoundsException e){ 
+          IllegalSquareCounterWhite++; 
+      }
+      
+      try {
+        if (board.AttackedSquaresWhite.contains(squares[X-1][Y+1]) || squares[X-1][Y+1].OccupiedBlack)
+          IllegalSquareCounterWhite++;
+      } catch (ArrayIndexOutOfBoundsException e){ 
+          IllegalSquareCounterWhite++; 
+      }
+      
+      try {
+        if (board.AttackedSquaresWhite.contains(squares[X-1][Y]) || squares[X-1][Y].OccupiedBlack)
+          IllegalSquareCounterWhite++;
+      } catch (ArrayIndexOutOfBoundsException e){ 
+          IllegalSquareCounterWhite++; 
+      }
+      
+      try {
+        if (board.AttackedSquaresWhite.contains(squares[X+1][Y]) || squares[X+1][Y].OccupiedBlack)
+          IllegalSquareCounterWhite++;
+      } catch (ArrayIndexOutOfBoundsException e){ 
+          IllegalSquareCounterWhite++; 
+      }
+      try {
+        if (board.AttackedSquaresWhite.contains(squares[X+1][Y+1]) || squares[X+1][Y+1].OccupiedBlack)
+          IllegalSquareCounterWhite++;
+      } catch (ArrayIndexOutOfBoundsException e){ 
+          IllegalSquareCounterWhite++; 
+      }
+      
+      if (IllegalSquareCounterWhite == 6)
+        NoLegalMovesWhite = true;
+    }
+  }
+  
+  void IsPieceCaptureable(SquareCollection board)
+  {
+    for (Piece p : AttackedByThesePieces)
+      {
+        if (p.isBlack)
+        {
+          for (Square s : board.AttackedSquaresBlack)
+          {
+            if (p.x == s.x && p.y == s.y)
+              AttackingPieceUncaptureableBlack = true;
+          }
+        }
+        else
+        {
+          for (Square s : board.AttackedSquaresWhite)
+          {
+            if (p.x == s.x && p.y == s.y)
+              AttackingPieceUncaptureableWhite = true;
+          }
+        }
+      }
+  }
   boolean IsSquareAttacked(ArrayList <Square> AttackedSquaresWhite, ArrayList <Square> AttackedSquaresBlack)
   {
     if (isBlack)

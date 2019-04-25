@@ -3,6 +3,7 @@ class Pawn extends Piece //<>//
   PImage PawnImage;
   ArrayList <Square> PawnAttackedSquaresWhite = new ArrayList();
   ArrayList <Square> PawnAttackedSquaresBlack = new ArrayList();
+  boolean OnAttackedSquare;
 
   public Pawn(PImage _PawnImage, boolean _isBlack, float _x, float _y, SquareCollection board)
   {
@@ -36,16 +37,20 @@ class Pawn extends Piece //<>//
         UpdateOccupiedSquares(SquareCollection);
         AddAttackedSquares(SquareCollection);
         KingPutInCheck(kings);
+        OnAttackedSquare(SquareCollection.AttackedSquaresWhite, SquareCollection.AttackedSquaresBlack);
         
         if (AttackingMove(squares))
           Capture(pawns, SquareCollection);
-      } else
+      } 
+      
+      else
       {
         this.x = InitXCoord;
         this.y = InitYCoord;
       }
     }
-  }
+    
+   }
   
   void AddAttackedSquares(SquareCollection board)
   {
@@ -103,6 +108,7 @@ class Pawn extends Piece //<>//
       {
         if (kings[0].x == s.x && kings[0].y == s.y)
           kings[0].InCheck = true;     
+          kings[1].AttackedByThesePieces.add(this);
       }
     }
     else
@@ -110,7 +116,10 @@ class Pawn extends Piece //<>//
       for (Square s : PawnAttackedSquaresBlack)
       {
         if (kings[1].x == s.x && kings[1].y == s.y)
+        {
           kings[1].InCheck = true;
+          kings[1].AttackedByThesePieces.add(this);
+        }
       }
     }
   }
