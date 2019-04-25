@@ -141,6 +141,15 @@ class Piece
     else return false;
   }
   
+  boolean YourKinginCheck(King [] kings)
+  {
+    if (isBlack && kings[1].InCheck)
+      return true;
+    else if (!isBlack && kings[0].InCheck)
+      return true;
+    else return false;
+  }
+  
   boolean SquareOccupiedSameColor(Square [][] Squares)
   {
     for(Square [] rows : Squares)

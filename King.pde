@@ -1,6 +1,10 @@
+//Todo method CheckChekmate
+//Todo Add to AttackedSquares
+
 class King extends Piece
 {
   PImage KingImage;
+  boolean InCheck;
   
   public King(PImage _KingImage, boolean _isBlack, float _x, float _y)
   {
@@ -29,6 +33,7 @@ class King extends Piece
         FirstMove = false;
         StateChecker.FlipColor();
         UpdateOccupiedSquares(SquareCollection);
+        OutOfCheck(AttackedSquaresWhite, AttackedSquaresBlack);
         if (AttackingMove(squares))
           Capture(pawns, SquareCollection);   
       } else
@@ -38,6 +43,14 @@ class King extends Piece
       }
       
     }
+  }
+  
+  void OutOfCheck(ArrayList AttackedSquaresWhite, ArrayList AttackedSquaresBlack)
+  {
+    System.out.println(InCheck);
+    if (this.InCheck == true && IsSquareAttacked(AttackedSquaresWhite, AttackedSquaresBlack) == false)
+      this.InCheck = false;
+    System.out.println(InCheck);
   }
   
   boolean IsSquareAttacked(ArrayList <Square> AttackedSquaresWhite, ArrayList <Square> AttackedSquaresBlack)

@@ -21,7 +21,7 @@ class Pawn extends Piece //<>//
       image(PawnImage, x + offsetx, y + offsety, l, l);
   }
 
-  void mouseReleased(SquareCollection SquareCollection, Square [][] squares, StateChecker StateChecker, Pawn [] pawns)
+  void mouseReleased(SquareCollection SquareCollection, Square [][] squares, StateChecker StateChecker, Pawn [] pawns, King [] kings)
   {
     if (Active)
     {      
@@ -29,12 +29,13 @@ class Pawn extends Piece //<>//
       LockPieceToSquare(squares);
       Active = false;      
 
-      if (Legal(StateChecker, squares))
+      if (Legal(StateChecker, squares, kings))
       {
         FirstMove = false;
         StateChecker.FlipColor();
         UpdateOccupiedSquares(SquareCollection);
         AddAttackedSquares(SquareCollection);
+        KingPutInCheck(kings);
         
         if (AttackingMove(squares))
           Capture(pawns, SquareCollection);
@@ -93,6 +94,40 @@ class Pawn extends Piece //<>//
    //Logging(board);
   }
   
+  //kings[0] == white king, kings[1] == black king
+  void KingPutInCheck(King [] kings)
+  {   
+    if (isBlack)
+    {
+      for (Square s : PawnAttackedSquaresWhite)
+      {
+        if (kings[0].x == s.x && kings[0].y == s.y)
+          kings[0].InCheck = true;     
+      }
+    }
+    else
+    {
+      for (Square s : PawnAttackedSquaresBlack)
+      {
+        if (kings[1].x == s.x && kings[1].y == s.y)
+          kings[1].InCheck = true;
+      }
+    }
+  }
+  
+  void Promotion()
+  {
+    if (isBlack && y == 540)
+    {
+      //promote
+    }
+    else
+    {
+      if (y == 0) {}
+        //Promote
+    }
+  }
+  
   boolean CheckBasicLegalMoves(Square [][] Squares)
   {  
     for (Square [] rows : Squares)
@@ -124,9 +159,9 @@ class Pawn extends Piece //<>//
     return false;
   }
 
-  boolean Legal(StateChecker StateChecker, Square [][] Squares)
+  boolean Legal(StateChecker StateChecker, Square [][] Squares, King [] kings)
   { 
-    if (CheckBasicLegalMoves(Squares) && CheckTurnColor(StateChecker) && SquareOccupiedSameColor(Squares) || AttackingMove(Squares))    
+    if (CheckBasicLegalMoves(Squares) && CheckTurnColor(StateChecker) && !YourKinginCheck(kings) && SquareOccupiedSameColor(Squares) || AttackingMove(Squares))    
       return true;
     else return false;
   }
