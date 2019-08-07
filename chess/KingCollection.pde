@@ -9,11 +9,15 @@ class KingCollection
     BlackKing = _BlackKing;
   }
 
-  void createKings()
+  void createKings(ArrayList<Piece> pieces)
   {
     kings = new King [2];
     kings[0] = new King(WhiteKing, false, 240, 420);
-    kings[1] = new King(BlackKing, true, 240, 0);
+    kings[1] = new King(BlackKing, true, 240, 0); 
+    
+    for (King k : kings) {
+      pieces.add(k);
+    }
   }
   
   void draw() 
@@ -44,11 +48,11 @@ class KingCollection
          k.mouseDragged(mousex,mousey); 
        }
      }
-  void mouseReleased(SquareCollection SquareCollection, Square [][] squares, Pawn [] pawns) 
+  void mouseReleased(SquareCollection board, ArrayList <Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks) 
     { 
       for (King k : kings)
       {
-        k.mouseReleased(SquareCollection, squares, pawns, kings, SquareCollection.AttackedSquaresWhite, SquareCollection.AttackedSquaresBlack);
+        k.mouseReleased(board, pieces, kings, pawns, rooks);
       }
     }
 }

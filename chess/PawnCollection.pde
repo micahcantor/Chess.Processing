@@ -10,7 +10,7 @@ class PawnCollection
     BlackPawn = _BlackPawn;
   }
 
-  void createPawns(Square [] [] squares, SquareCollection board)
+  void createPawns(ArrayList<Piece> pieces)
   {
     pawns = new Pawn[16];
     int x, y, FileCounterBlack = 0, FileCounterWhite = 0;
@@ -20,34 +20,20 @@ class PawnCollection
       {
         x = 60 * (FileCounterBlack); //may change eventually to starting square x and starting square y
         y = 60;
-        pawns[i] = new Pawn(BlackPawn, true, x, y, board);
+        pawns[i] = new Pawn(BlackPawn, true, x, y);
         FileCounterBlack++;
-        
-        for (Square [] row : squares)
-        {
-          for (Square s : row)
-          {
-            if (x == s.x && y == s.y)
-              s.OccupiedBlack = true;
-          }
-        }
       }
       else
       {
         x = 60 * (FileCounterWhite);
         y = 360;
-        pawns[i] = new Pawn(WhitePawn, false, x, y, board);
+        pawns[i] = new Pawn(WhitePawn, false, x, y);
         FileCounterWhite++;
-        
-        for (Square [] row : squares)
-        {
-          for (Square s : row)
-          {
-            if (x == s.x && y == s.y)
-              s.OccupiedWhite = true;
-          }
-        }
       }
+    }
+    
+    for (Pawn p : pawns) {
+      pieces.add(p);
     }
   }
   void draw() 
@@ -78,11 +64,11 @@ class PawnCollection
          p.mouseDragged(mousex,mousey); 
        }
      }
-  void mouseReleased(SquareCollection SquareCollection, Square [][] squares, StateChecker StateChecker, Pawn [] pawns, King [] kings) 
+  void mouseReleased(SquareCollection SquareCollection, Square [][] squares, StateChecker StateChecker, Pawn [] pawns, King [] kings, Rook [] rooks, ArrayList <Piece> pieces) 
     { 
       for (Pawn p : pawns)
       {
-        p.mouseReleased(SquareCollection, squares, StateChecker, pawns, kings);
+        p.mouseReleased(SquareCollection, squares, StateChecker, pawns, kings, rooks, pieces);
       }
     }
 }

@@ -20,6 +20,10 @@ class Square
     squarenumber = _squarenumber;
   }
   
+  String toString() {
+    return(String.valueOf(squarenumber));
+  }
+  
   void draw()
   {    
     if (isBlack) fill(black);
