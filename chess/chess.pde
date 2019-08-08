@@ -93,5 +93,6 @@ void mouseReleased()
   pawns.mouseReleased(board, board.squares, StateChecker, pawns.pawns, kings.kings, rooks.rooks, pieces);
   kings.mouseReleased(board, pieces, kings.kings, pawns.pawns, rooks.rooks);
   rooks.mouseReleased(board, rooks.rooks, kings.kings, pawns.pawns);
+  kings.kings[0].AttackedSquaresLogging(board);
   redraw(); 
 }

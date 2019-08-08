@@ -142,6 +142,16 @@ class Piece
     }
   }
   
+  boolean CheckForCheckmate(SquareCollection board, Rook [] rooks, King [] kings) {
+    if (isBlack && kings[0].Checkmate(board, rooks))
+      return true;
+      
+    else if (!isBlack && kings[1].Checkmate(board,rooks))
+      return true;
+    
+    else return false;    
+  }
+  
   void AttackedSquaresLogging(SquareCollection board)
   {
     ArrayList<Integer> numbers = new ArrayList <Integer>();

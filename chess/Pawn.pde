@@ -50,6 +50,9 @@ class Pawn extends Piece //<>//
       //  OnAttackedSquare(SquareCollection.AttackedSquaresWhite, SquareCollection.AttackedSquaresBlack); // Not sure what the point of this is
         
         AttackingMove = false;                            // turns attacking move back to false
+        
+        if (CheckForCheckmate(board, rooks, kings))
+          println("mate");
      
     // if not a legal move, return piece to original coords
     } else {
@@ -171,6 +174,7 @@ class Pawn extends Piece //<>//
             CapturedOnX = (int) Squares[row][col].x;
             CapturedOnY = (int) Squares[row][col].y;
             BlackIsCaptured = true;
+            UpdateAttackedSquares(board);
             return true;
           }
           else if ((XChange == 1 || XChange == -1) && YChange == 1 && isBlack && Squares[row][col].OccupiedWhite) {
@@ -178,6 +182,7 @@ class Pawn extends Piece //<>//
            CapturedOnX = (int) Squares[row][col].x;
            CapturedOnY = (int) Squares[row][col].y;
            BlackIsCaptured = false;
+           UpdateAttackedSquares(board);
            return true;
           }
           else return false;

@@ -46,10 +46,12 @@ class Rook extends Piece {
         KingPutInCheck(kings);
         
         if (kings[1].InCheck) 
-          kings[1].CanMoveBeBlocked(board);
+          kings[1].CanMoveBeBlocked(board, rooks);
         
         AttackingMove = false;
       
+       if (CheckForCheckmate(board, rooks, kings))
+          println("mate");
       
     } else {
         this.x = InitXCoord;
@@ -237,6 +239,7 @@ class Rook extends Piece {
                 CapturedOnX = (int) board.squares[row][col + i].x;
                 CapturedOnY = (int) board.squares[row][col + i].y;
                 BlackIsCaptured = true;
+                UpdateAttackedSquares(board);
                 return true;
               }              
             }
@@ -255,6 +258,7 @@ class Rook extends Piece {
                 CapturedOnX = (int) board.squares[row][col - i].x;
                 CapturedOnY = (int) board.squares[row][col - i].y;
                 BlackIsCaptured = false;
+                UpdateAttackedSquares(board);
                 return true;
               }
               if (board.squares[row][col - i].OccupiedBlack && !isBlack) { // capture of black
@@ -262,6 +266,7 @@ class Rook extends Piece {
                 CapturedOnX = (int) board.squares[row][col - i].x;
                 CapturedOnY = (int) board.squares[row][col - i].y;
                 BlackIsCaptured = true;
+                UpdateAttackedSquares(board);
                 return true;
               }              
             }
@@ -277,24 +282,26 @@ class Rook extends Piece {
                 return false;
               if (board.squares[row - i][col].OccupiedWhite && isBlack) { // capture of white
                 AttackingMove = true;
-                CapturedOnX = (int) board.squares[row][col - i].x;
-                CapturedOnY = (int) board.squares[row][col - i].y;
+                CapturedOnX = (int) board.squares[row - i][col].x;
+                CapturedOnY = (int) board.squares[row - i][col].y;
                 BlackIsCaptured = false;
+                UpdateAttackedSquares(board);
                 return true;
               }
               if (board.squares[row - i][col].OccupiedBlack && !isBlack) { // capture of black
                 AttackingMove = true;
-                CapturedOnX = (int) board.squares[row][col - i].x;
-                CapturedOnY = (int) board.squares[row][col - i].y;
+                CapturedOnX = (int) board.squares[row - i][col].x;
+                CapturedOnY = (int) board.squares[row - i][col].y;
                 BlackIsCaptured = true;
+                UpdateAttackedSquares(board);
                 return true;
               }              
             }
             return true; // if there is nothing in the way then return true;
           }
           
-          if ((XChange < 0 && YChange == 0)) { // If rook is moving right
-            for (int i = 0; i < XChange; i++) { // for each square that it moved
+          if ((XChange < 0 && YChange == 0)) { // If rook is moving left
+            for (int i = 0; i < abs(XChange); i++) { // for each square that it moved
               // check if that square was occupied
               if (board.squares[row + i][col].OccupiedBlack && isBlack) //occupied black and black piece
                 return false;
@@ -302,16 +309,18 @@ class Rook extends Piece {
                 return false;
               if (board.squares[row + i][col].OccupiedWhite && isBlack) { // capture of white
                 AttackingMove = true;
-                CapturedOnX = (int) board.squares[row][col + i].x;
-                CapturedOnY = (int) board.squares[row][col + i].y;
+                CapturedOnX = (int) board.squares[row + i][col].x;
+                CapturedOnY = (int) board.squares[row + i][col].y;
                 BlackIsCaptured = false;
+                UpdateAttackedSquares(board);
                 return true;
               }
               if (board.squares[row + i][col].OccupiedBlack && !isBlack) { // capture of black
                 AttackingMove = true;
-                CapturedOnX = (int) board.squares[row][col + i].x;
-                CapturedOnY = (int) board.squares[row][col + i].y;
+                CapturedOnX = (int) board.squares[row + i][col].x;
+                CapturedOnY = (int) board.squares[row + i][col].y;
                 BlackIsCaptured = true;
+                UpdateAttackedSquares(board);
                 return true;
               }              
             }
@@ -321,6 +330,42 @@ class Rook extends Piece {
         }
       }
     }
+    return false;
+  }
+  
+  boolean ValidMove(SquareCollection board, int SquareXInd, int SquareYInd) {
+    int XDiff = SquareXInd - this.XInd;
+    int YDiff = SquareYInd - this.YInd;
+    
+    if (XDiff == 0 && YDiff > 0) { //Rook is above square
+      for (int i = this.YInd + 1; i < SquareYInd; i++) {
+        if (board.squares[SquareXInd][i].OccupiedWhite || board.squares[SquareXInd][i].OccupiedBlack)
+          return false;
+      }
+      return true;
+    }
+    if (XDiff == 0 && YDiff < 0) { //Rook is below square
+      for (int i = this.YInd - 1; i > SquareYInd; i--) {
+        if (board.squares[SquareXInd][i].OccupiedWhite || board.squares[SquareXInd][i].OccupiedBlack)
+          return false;
+      }
+      return true;
+    }
+    if (XDiff > 0 && YDiff == 0) { //Rook is left of square
+      for (int i = this.XInd + 1; i < SquareXInd; i++) {
+        if (board.squares[i][SquareYInd].OccupiedWhite || board.squares[i][SquareYInd].OccupiedBlack)
+          return false;
+      }
+      return true;
+    }
+    if (XDiff < 0 && YDiff == 0) { //Rook is right of square
+      for (int i = this.XInd - 1; i > SquareXInd; i--) {
+        if (board.squares[i][SquareYInd].OccupiedWhite || board.squares[i][SquareYInd].OccupiedBlack)
+          return false;
+      }
+      return true;
+    }
+        
     return false;
   }
    
