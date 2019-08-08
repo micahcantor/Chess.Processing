@@ -142,8 +142,7 @@ class Pawn extends Piece //<>//
   
   void Promotion()
   {
-    if (isBlack && y == 540)
-    {
+    if (isBlack && y == 540) {
       //promote
     }
     else

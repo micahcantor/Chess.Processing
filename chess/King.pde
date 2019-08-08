@@ -29,7 +29,7 @@ class King extends Piece
       LockPieceToSquare(board.squares);
       active = false;      
 
-      if (Legal(StateChecker, board, board.AttackedSquaresWhite, board.AttackedSquaresBlack)) {
+      if (Legal(StateChecker, board, rooks, pawns, kings)) {
         UpdateXYIndices(board);
         
         if (AttackingMove)
@@ -514,7 +514,7 @@ class King extends Piece
       return false;
     }
   }
-  boolean CheckBasicLegalMoves(Square [][] Squares) {  
+  boolean CheckBasicLegalMoves(Square [][] Squares, Rook [] rooks, Pawn [] pawns, King [] kings) {  
     for (Square [] rows : Squares) {
       for (int i = 0; i < rows.length; i++) {
         if (rows[i].active) {
@@ -539,6 +539,26 @@ class King extends Piece
             return true;
           }
           
+          else if (FirstMove && !isBlack && XChange == -2 && rooks[0].FirstMove) {
+            rooks[0].CastleMove(rooks, pawns, kings);
+            return true;
+          }
+          
+          else if (FirstMove && !isBlack && XChange == 2 && rooks[1].FirstMove) {
+            rooks[1].CastleMove(rooks, pawns, kings);
+            return true;
+          }
+          
+          else if (FirstMove && isBlack && XChange == -2 && rooks[2].FirstMove) {
+            rooks[2].CastleMove(rooks, pawns, kings);
+            return true;
+          }
+          
+          else if (FirstMove && isBlack && XChange == 2 && rooks[3].FirstMove) {
+            rooks[3].CastleMove(rooks, pawns, kings);
+            return true;
+          }
+           
           else return false;
         }
       }
@@ -546,8 +566,8 @@ class King extends Piece
     return false;
   } 
   
-  boolean Legal(StateChecker StateChecker, SquareCollection board, ArrayList <Square> AttackedSquaresWhite, ArrayList <Square> AttackedSquaresBlack) {
-    if (CheckBasicLegalMoves(board.squares) && CheckTurnColor(StateChecker) && !IsSquareAttacked(AttackedSquaresWhite, AttackedSquaresBlack))       
+  boolean Legal(StateChecker StateChecker, SquareCollection board, Rook [] rooks, Pawn [] pawns, King [] kings) {
+    if (CheckBasicLegalMoves(board.squares, rooks, pawns, kings) && CheckTurnColor(StateChecker) && !IsSquareAttacked(board.AttackedSquaresWhite, board.AttackedSquaresBlack))       
       return true;
     else 
       return false;

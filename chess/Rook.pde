@@ -212,6 +212,39 @@ class Rook extends Piece {
       }
     }
   }
+  
+  void CastleMove(Rook [] rooks, Pawn [] pawns, King [] kings) {
+    
+    // Move Rook
+    if (x == 0)
+      x += 180;
+      
+    else if (x == 420)
+      x -= 120;
+    
+    // Follow through with normal move happenings for the rook
+    UpdateXYIndices(board);
+        
+    for (Rook r : rooks) {
+      r.UpdateAttackedSquares(board);
+    }
+    for (Pawn p : pawns) {
+      p.UpdateAttackedSquares(board);
+    }
+    
+    FirstMove = false;
+    
+    UpdateOccupiedSquares(board, pieces);
+    //OnAttackedSquare(board.AttackedSquaresWhite, board.AttackedSquaresBlack);
+    
+    KingPutInCheck(kings);
+    
+    if (kings[1].InCheck) 
+      kings[1].CanMoveBeBlocked(board, rooks);
+      
+    if (CheckForCheckmate(board, rooks, kings))
+      println("mate");
+  }
     
   boolean CheckBasicLegalMoves(SquareCollection board) {
     for (int row = 0; row < board.squares.length; row++) {
