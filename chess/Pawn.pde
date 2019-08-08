@@ -21,10 +21,10 @@ class Pawn extends Piece //<>//
 
   void mouseReleased(SquareCollection SquareCollection, Square [][] squares, StateChecker StateChecker, Pawn [] pawns, King [] kings, Rook [] rooks, ArrayList<Piece> pieces)
   {
-    if (Active && visible) {      
+    if (active && visible) {      
       GetXYChange(SquareCollection, mouseX, mouseY);    // gets x and y change in indices, stored in XChange/YChange
       LockPieceToSquare(squares);                       // locks piece to the middle of the square it move to
-      Active = false;                                   // turn off mouse activity for this piece
+      active = false;                                   // turn off mouse activity for this piece
 
     // if legal move :
       if (Legal(StateChecker, squares, kings)) {  

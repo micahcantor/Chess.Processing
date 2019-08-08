@@ -10,7 +10,7 @@ class Piece
   
   float x, y, l;
   int XInd, YInd;
-  boolean Active; //stores the over method as a variable
+  boolean active; //stores the over method as a variable
   int clickx, clicky; //Store the position of the mouse when it is clicked
   int offsetx=0, offsety=0; // Store the difference in location from where the mouse is clicked to where it moves to
   //offset = mouse - click
@@ -24,12 +24,12 @@ class Piece
   
   void mouseMoved(int mousex, int mousey) 
   {
-    Active = over(mousex, mousey);
+    active = over(mousex, mousey);
   }
 
   void mousePressed(int mousex, int mousey, SquareCollection squares)
   {
-    if (Active == true)
+    if (active == true)
     { 
       InitSquareX = squares.GetXIndexMouse(mousex);
       InitSquareY = squares.GetYIndexMouse(mousey);
@@ -43,10 +43,8 @@ class Piece
     }
   }
 
-  void mouseDragged(int mousex, int mousey)
-  {
-    if (Active == true)
-    {
+  void mouseDragged(int mousex, int mousey) {
+    if (active) {
       offsetx = mousex - clickx;
       offsety = mousey - clicky;
     }
@@ -60,6 +58,7 @@ class Piece
     //Make piece invisible
     for (Piece pi : pieces) {
       if (pi.x == CapturedOnX && pi.y == CapturedOnY && RightCaptureColor(pi.isBlack) && pi.visible) {
+        println(BlackIsCaptured, pi.isBlack);
         pi.visible = false;
       }
     }

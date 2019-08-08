@@ -24,10 +24,10 @@ class King extends Piece
   }
   
   void mouseReleased(SquareCollection board, ArrayList <Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks) {
-    if (Active) {      
+    if (active) {      
       GetXYChange(board, mouseX, mouseY);
       LockPieceToSquare(board.squares);
-      Active = false;      
+      active = false;      
 
       if (Legal(StateChecker, board, board.AttackedSquaresWhite, board.AttackedSquaresBlack)) {
         UpdateXYIndices(board);
@@ -93,7 +93,6 @@ class King extends Piece
     //If the move cannot be blocked
     CanMoveBeBlocked(board, rooks);
     
-    println( NoLegalMovesBlack, AttackingPieceUncaptureableBlack, UnblockableAttackBlack );
     if (isBlack) {
       if (NoLegalMovesBlack && AttackingPieceUncaptureableBlack && UnblockableAttackBlack)
         return true;
@@ -381,12 +380,10 @@ class King extends Piece
       
       int XDiff = AttackedByThesePieces.get(0).XInd - this.XInd;
       int YDiff = AttackedByThesePieces.get(0).YInd - this.YInd;
-      println(XDiff, YDiff);
       
    ///////// rook attacking from BELOW king  /////////////
       if (YDiff > 0) {                   
         for (int i = this.YInd + 1; i < AttackedByThesePieces.get(0).YInd; i++) { // for each square between rook and king
-          println(i);
           if (isBlack) {    // black king
             for (Rook r : rooks) {
               if (r.isBlack) {
@@ -410,13 +407,11 @@ class King extends Piece
         if (PiecesThatCanBlockWhite == 0)
           UnblockableAttackWhite = true;
           
-        println(UnblockableAttackBlack, UnblockableAttackWhite);
       }
 
     ///////// rook attacking from the ABOVE of king ///////////////////////
       if (YDiff < 0) {                   
         for (int i = this.YInd - 1 ; i > AttackedByThesePieces.get(0).YInd; i--) { // for each square between rook and king
-          println(i);
           if (isBlack) {    // black king
             for (Rook r : rooks) {
               if (r.isBlack) {
@@ -440,13 +435,11 @@ class King extends Piece
         if (PiecesThatCanBlockWhite == 0)
           UnblockableAttackWhite = true;
           
-        println(UnblockableAttackBlack, UnblockableAttackWhite);
       }
       
     ///////////// rook attacking from LEFT of king ////////////////////////
       if (XDiff < 0) {                   
         for (int i = this.XInd - 1; i > AttackedByThesePieces.get(0).XInd; i--) { // for each square between rook and king
-          println(i);
           if (isBlack) {    // black king
             for (Rook r : rooks) {
               if (r.isBlack) {
@@ -470,13 +463,11 @@ class King extends Piece
         if (PiecesThatCanBlockWhite == 0)
           UnblockableAttackWhite = true;
           
-        println(UnblockableAttackBlack, UnblockableAttackWhite);
       }
       
     ///////////// rook attacking from RIGHT of king ////////////////////////
       if (XDiff > 0) {                   
         for (int i = this.XInd + 1; i < AttackedByThesePieces.get(0).XInd; i++) { // for each square between rook and king
-          println(i);
           if (isBlack) {    // black king
             for (Rook r : rooks) {
               if (r.isBlack) {
@@ -500,7 +491,6 @@ class King extends Piece
         if (PiecesThatCanBlockWhite == 0)
           UnblockableAttackWhite = true;
           
-        println(UnblockableAttackBlack, UnblockableAttackWhite);
       }
       
     }

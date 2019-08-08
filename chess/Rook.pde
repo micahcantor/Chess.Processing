@@ -1,3 +1,4 @@
+
 class Rook extends Piece {
   PImage RookImage;
   ArrayList <Square> RookAttackedSquaresWhite = new ArrayList();
@@ -16,12 +17,11 @@ class Rook extends Piece {
       image(RookImage, x + offsetx, y + offsety, l, l);
   }
   
-  void mouseReleased(SquareCollection board, Rook [] rooks, King [] kings, Pawn [] pawns)
-  {
-    if (Active) {      
+  void mouseReleased(SquareCollection board, Rook [] rooks, King [] kings, Pawn [] pawns) {
+    if (active && visible) {      
       GetXYChange(board, mouseX, mouseY);
       LockPieceToSquare(board.squares);
-      Active = false;      
+      active = false;      
       
       if (Legal(StateChecker, board, kings)) {  
         UpdateXYIndices(board);
@@ -199,7 +199,6 @@ class Rook extends Piece {
     if (isBlack) {
       for (Square s : RookAttackedSquaresWhite) {
         if (kings[0].x == s.x && kings[0].y == s.y) {
-          println("hey");
           kings[0].InCheck = true;     
           kings[1].AttackedByThesePieces.add(this);
         }

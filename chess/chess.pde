@@ -8,18 +8,17 @@ ArrayList <Piece> pieces;
 SquareCollection board;
 StateChecker StateChecker;
 
-void setup()
-{
+void setup() {
   size(480, 480);
   
-  PImage WhitePawn = loadImage("WhitePawn.png");
-  PImage BlackPawn = loadImage("BlackPawn.png");
+  PImage WhitePawn = loadImage("icons/WhitePawn.png");
+  PImage BlackPawn = loadImage("icons/BlackPawn.png");
   
-  PImage WhiteKing = loadImage("WhiteKing.png");
-  PImage BlackKing = loadImage("BlackKing.png");
+  PImage WhiteKing = loadImage("icons/WhiteKing.png");
+  PImage BlackKing = loadImage("icons/BlackKing.png");
   
-  PImage WhiteRook = loadImage("WhiteRook.png");
-  PImage BlackRook = loadImage("BlackRook.png");
+  PImage WhiteRook = loadImage("icons/WhiteRook.png");
+  PImage BlackRook = loadImage("icons/BlackRook.png");
   
   pawns = new PawnCollection(WhitePawn, BlackPawn);
   kings = new KingCollection(WhiteKing, BlackKing);
@@ -93,6 +92,5 @@ void mouseReleased()
   pawns.mouseReleased(board, board.squares, StateChecker, pawns.pawns, kings.kings, rooks.rooks, pieces);
   kings.mouseReleased(board, pieces, kings.kings, pawns.pawns, rooks.rooks);
   rooks.mouseReleased(board, rooks.rooks, kings.kings, pawns.pawns);
-  kings.kings[0].AttackedSquaresLogging(board);
   redraw(); 
 }

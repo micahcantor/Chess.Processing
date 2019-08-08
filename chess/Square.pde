@@ -8,8 +8,7 @@ class Square
   int squarenumber;
   boolean OccupiedWhite, OccupiedBlack;
   
-   public Square(float _x, float _y, boolean _isBlack, int _squarenumber)
-  {
+   public Square(float _x, float _y, boolean _isBlack, int _squarenumber) {
     x = _x;
     y = _y;
     l = 60;
@@ -24,24 +23,23 @@ class Square
     return(String.valueOf(squarenumber));
   }
   
-  void draw()
-  {    
-    if (isBlack) fill(black);
-    else fill(white);
+  void draw() {    
+    if (isBlack) 
+      fill(black);
+    else 
+      fill(white);
+      
     rect(x , y, l, l);
   }
   
-  void mouseDragged(int mousex, int mousey)
-  {
+  void mouseDragged(int mousex, int mousey) {
     active = over(mousex, mousey);
   }
-  void mouseReleased()
-  {
+  void mouseReleased() {
     active = false;
   }
  
-  boolean over(int mousex, int mousey)
-  {
+  boolean over(int mousex, int mousey) {
     return(mousex >= x && mousex <= x + 60 && mousey >= y && mousey <= y + 60); 
   }
 }

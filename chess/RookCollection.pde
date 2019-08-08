@@ -11,7 +11,7 @@ class RookCollection
 
   void createRooks(ArrayList<Piece> pieces)
   {
-    rooks = new Rook [4];
+    rooks    = new Rook [4];
     rooks[0] = new Rook(WhiteRook, false, 0, 420);
     rooks[1] = new Rook(WhiteRook, false, 420, 420);
     rooks[2] = new Rook(BlackRook, true, 0, 0);
