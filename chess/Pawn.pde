@@ -19,15 +19,15 @@ class Pawn extends Piece //<>//
       image(PawnImage, x + offsetx, y + offsety, l, l);
   }
 
-  void mouseReleased(SquareCollection SquareCollection, Square [][] squares, StateChecker StateChecker, Pawn [] pawns, King [] kings, Rook [] rooks, ArrayList<Piece> pieces)
+  void mouseReleased(SquareCollection SquareCollection, StateChecker StateChecker, ArrayList<Piece> pieces, Pawn [] pawns, King [] kings, Rook [] rooks, Bishop [] bishops)
   {
     if (active && visible) {      
       GetXYChange(SquareCollection, mouseX, mouseY);    // gets x and y change in indices, stored in XChange/YChange
-      LockPieceToSquare(squares);                       // locks piece to the middle of the square it move to
+      LockPieceToSquare(board.squares);                 // locks piece to the middle of the square it move to
       active = false;                                   // turn off mouse activity for this piece
 
     // if legal move :
-      if (Legal(StateChecker, squares, kings)) {  
+      if (Legal(StateChecker, board.squares, kings)) {  
         UpdateXYIndices(board);
         
         if (AttackingMove) {                            // Capture if attacking move
@@ -35,19 +35,13 @@ class Pawn extends Piece //<>//
         }
      
         // Update attacked squares for all pieces
-        for (Pawn p : pawns) {
-          p.UpdateAttackedSquares(SquareCollection);
-        }
-        for (Rook r : rooks) {
-          r.UpdateAttackedSquares(SquareCollection);
-        }
+        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
         
         FirstMove = false;
         StateChecker.FlipColor();
         
         UpdateOccupiedSquares(SquareCollection, pieces);  // Piece moved so occupied squares changes
         KingPutInCheck(kings);                            // Check if king is now in check (and if this piece is now an attacker of king)
-      //  OnAttackedSquare(SquareCollection.AttackedSquaresWhite, SquareCollection.AttackedSquaresBlack); // Not sure what the point of this is
         
         AttackingMove = false;                            // turns attacking move back to false
         
@@ -89,9 +83,11 @@ class Pawn extends Piece //<>//
       if (visible) {
         try {
           PawnAttackedSquaresWhite.add(squares[CurrentX + 1][CurrentY + 1]);  // diagonal down right
+          squares[CurrentX + 1][CurrentY + 1].AttackedByBlack = true;
         } catch(IndexOutOfBoundsException e){}
         try {
           PawnAttackedSquaresWhite.add(squares[CurrentX - 1][CurrentY + 1]);  // diagonal down left
+          squares[CurrentX - 1][CurrentY + 1].AttackedByBlack = true;
         } catch(IndexOutOfBoundsException e){}    
         
         for (Square s : PawnAttackedSquaresWhite) {
@@ -106,9 +102,11 @@ class Pawn extends Piece //<>//
       if (visible) {
         try {
           PawnAttackedSquaresBlack.add(squares[CurrentX + 1][CurrentY - 1]);  // diag up right
+          squares[CurrentX + 1][CurrentY - 1].AttackedByWhite = true;
         } catch(IndexOutOfBoundsException e){}
         try {
           PawnAttackedSquaresBlack.add(squares[CurrentX - 1][CurrentY - 1 ]);  // diag up left
+          squares[CurrentX - 1][CurrentY - 1].AttackedByWhite = true;
         } catch(IndexOutOfBoundsException e){}
         
         for (Square s : PawnAttackedSquaresBlack) {

@@ -1,7 +1,6 @@
 import java.util.*;
 
-class Piece
-{
+class Piece {
   boolean isBlack;
   boolean FirstMove = true;
   boolean visible = true;
@@ -22,15 +21,12 @@ class Piece
   
   public Piece () {}
   
-  void mouseMoved(int mousex, int mousey) 
-  {
+  void mouseMoved(int mousex, int mousey) {
     active = over(mousex, mousey);
   }
 
-  void mousePressed(int mousex, int mousey, SquareCollection squares)
-  {
-    if (active == true)
-    { 
+  void mousePressed(int mousex, int mousey, SquareCollection squares) {
+    if (active == true) { 
       InitSquareX = squares.GetXIndexMouse(mousex);
       InitSquareY = squares.GetYIndexMouse(mousey);
       InitXCoord = (int) this.x;
@@ -64,14 +60,10 @@ class Piece
     }
   }
   
-  void LockPieceToSquare (Square [][] Squares)
-  {
-     for(Square [] rows : Squares)
-      {
-        for (Square s : rows)
-        {
-          if (s.active)
-          {
+  void LockPieceToSquare (Square [][] Squares) {
+     for(Square [] rows : Squares) {
+        for (Square s : rows) {
+          if (s.active) {
             this.x = s.x;
             this.y = s.y;
           }
@@ -130,14 +122,43 @@ class Piece
     if (isBlack){
       for (Square s : PieceAttackedWhite) {
           board.AttackedSquaresWhite.remove(s);
+          s.AttackedByBlack = false;
         }
         PieceAttackedWhite.clear();
     }
     else {
       for (Square s : PieceAttackedBlack) {
           board.AttackedSquaresBlack.remove(s);
+          s.AttackedByWhite = false;
         }
         PieceAttackedBlack.clear();
+    }
+  }
+  
+  void UpdateAllPiecesAttackedSquares(SquareCollection board, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) {
+    for (King k : kings) {
+      k.UpdateAttackedSquares(board);
+    }
+    for (Pawn p : pawns) {
+      p.UpdateAttackedSquares(board);
+    }
+    for (Rook r : rooks) {
+      r.UpdateAttackedSquares(board);
+    }
+    for (Bishop b : bishops) {
+      b.UpdateAttackedSquares(board);
+    }
+  }
+  
+  void UpdateForDiscoveredCheck(King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) {
+    for (Pawn p : pawns) {
+      p.KingPutInCheck(kings);
+    }
+    for (Rook r : rooks) {
+      r.KingPutInCheck(kings);
+    }
+    for (Bishop b : bishops) {
+      b.KingPutInCheck(kings);
     }
   }
   
@@ -183,33 +204,26 @@ class Piece
     else return false;
   }
   
-  boolean OnAttackedSquare(ArrayList<Square> AttackedSquaresWhite, ArrayList<Square> AttackedSquaresBlack)
-  {
-    if (isBlack)
-    {
-      for (Square s : AttackedSquaresBlack)
-      {
+  boolean OnAttackedSquare(ArrayList<Square> AttackedSquaresWhite, ArrayList<Square> AttackedSquaresBlack) {
+    if (isBlack) {
+      for (Square s : AttackedSquaresBlack){
         if (s.x == this.x && s.y == this.y)
           return true;
       }
     }
-    else
-    {
-      for (Square s : AttackedSquaresWhite)
-      {
+    else {
+      for (Square s : AttackedSquaresWhite) {
         if (s.x == this.x && s.y == this.y)
           return true;
       }
     }
     return false;
   }
-  boolean over(int mousex, int mousey)
-  {
+  boolean over(int mousex, int mousey) {
     return(mousex >= x && mousex <= x + 60 && mousey >= y && mousey <= y + 60);
   }
 
-  boolean CheckTurnColor(StateChecker StateChecker)
-  {
+  boolean CheckTurnColor(StateChecker StateChecker) {
     if (isBlack == false && StateChecker.WhiteTurn == true)
       return true;
     else if (isBlack == true && StateChecker.WhiteTurn == false)
@@ -217,8 +231,7 @@ class Piece
     else return false;
   }
   
-  boolean YourKinginCheck(King [] kings)
-  {
+  boolean YourKinginCheck(King [] kings) {
     if (isBlack && kings[1].InCheck)
       return true;
     else if (!isBlack && kings[0].InCheck)

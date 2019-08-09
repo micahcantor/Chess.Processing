@@ -52,9 +52,9 @@ class PawnCollection
          p.mouseDragged(mousex,mousey); 
        }
      }
-  void mouseReleased(SquareCollection SquareCollection, Square [][] squares, StateChecker StateChecker, Pawn [] pawns, King [] kings, Rook [] rooks, ArrayList <Piece> pieces) { 
+  void mouseReleased(SquareCollection SquareCollection, StateChecker StateChecker, ArrayList<Piece> pieces, Pawn [] pawns, King [] kings, Rook [] rooks, Bishop [] bishops) { 
       for (Pawn p : pawns) {
-        p.mouseReleased(SquareCollection, squares, StateChecker, pawns, kings, rooks, pieces);
+        p.mouseReleased(SquareCollection, StateChecker, pieces, pawns, kings, rooks, bishops);
       }
     }
 }

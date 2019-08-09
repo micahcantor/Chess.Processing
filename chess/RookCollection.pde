@@ -3,14 +3,12 @@ class RookCollection
   Rook [] rooks;
   PImage WhiteRook, BlackRook;
   
-  public RookCollection(PImage _WhiteRook, PImage _BlackRook)
-  {
+  public RookCollection(PImage _WhiteRook, PImage _BlackRook) {
     WhiteRook = _WhiteRook;
     BlackRook = _BlackRook;
   }
 
-  void createRooks(ArrayList<Piece> pieces)
-  {
+  void createRooks(ArrayList<Piece> pieces) {
     rooks    = new Rook [4];
     rooks[0] = new Rook(WhiteRook, false, 0, 420);
     rooks[1] = new Rook(WhiteRook, false, 420, 420);
@@ -22,39 +20,29 @@ class RookCollection
     }                                               
   }
   
-  void draw() 
-  { 
-    for(Rook r : rooks) 
-    { 
+  void draw() { 
+    for(Rook r : rooks) { 
       r.draw(); 
     }
   }
-  void mouseMoved(int mousex, int mousey) 
-  { 
-  for(Rook r : rooks) 
-    { 
+  void mouseMoved(int mousex, int mousey) { 
+    for(Rook r : rooks) { 
       r.mouseMoved(mousex,mousey); 
-    }
-  } 
-  void mousePressed(int mousex, int mousey, SquareCollection squares) 
-    { 
-     for(Rook r : rooks) 
-      { 
+      }
+    } 
+  void mousePressed(int mousex, int mousey, SquareCollection squares) { 
+     for(Rook r : rooks) { 
         r.mousePressed(mousex,mousey, squares); 
       }
     } 
-  void mouseDragged(int mousex, int mousey) 
-    { 
-     for(Rook r : rooks) 
-       { 
+  void mouseDragged(int mousex, int mousey) { 
+     for(Rook r : rooks) { 
          r.mouseDragged(mousex,mousey); 
        }
      }
-  void mouseReleased(SquareCollection board, Rook [] rooks, King [] kings, Pawn [] pawns) 
-    { 
-      for (Rook r : rooks)
-      {
-        r.mouseReleased(board, rooks, kings, pawns);
+  void mouseReleased(SquareCollection board, Rook [] rooks, King [] kings, Pawn [] pawns, Bishop [] bishops) { 
+      for (Rook r : rooks) {
+        r.mouseReleased(board, rooks, kings, pawns, bishops);
       }
     }
 }

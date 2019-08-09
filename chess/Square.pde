@@ -7,6 +7,7 @@ class Square
   PShape SquareShape;
   int squarenumber;
   boolean OccupiedWhite, OccupiedBlack;
+  boolean AttackedByWhite, AttackedByBlack;
   
    public Square(float _x, float _y, boolean _isBlack, int _squarenumber) {
     x = _x;

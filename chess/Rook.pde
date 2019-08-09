@@ -17,43 +17,35 @@ class Rook extends Piece {
       image(RookImage, x + offsetx, y + offsety, l, l);
   }
   
-  void mouseReleased(SquareCollection board, Rook [] rooks, King [] kings, Pawn [] pawns) {
+  void mouseReleased(SquareCollection board, Rook [] rooks, King [] kings, Pawn [] pawns, Bishop [] bishops) {
     if (active && visible) {      
       GetXYChange(board, mouseX, mouseY);
       LockPieceToSquare(board.squares);
       active = false;      
       
-      if (Legal(StateChecker, board, kings)) {  
+      if (Legal(StateChecker, board, kings)) 
+      {  
         UpdateXYIndices(board);
         
-        if (AttackingMove) {
+        if (AttackingMove) 
           Capture(pieces);
-        } 
-        
-        for (Rook r : rooks) {
-          r.UpdateAttackedSquares(board);
-        }
-        for (Pawn p : pawns) {
-          p.UpdateAttackedSquares(board);
-        }
+               
+        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
         
         FirstMove = false;
         StateChecker.FlipColor();
         
         UpdateOccupiedSquares(board, pieces);
-        //OnAttackedSquare(board.AttackedSquaresWhite, board.AttackedSquaresBlack);
         
+        AttackedSquaresLogging(board);
         KingPutInCheck(kings);
-        
-        if (kings[1].InCheck) 
-          kings[1].CanMoveBeBlocked(board, rooks);
         
         AttackingMove = false;
       
        if (CheckForCheckmate(board, rooks, kings))
           println("mate");
       
-    } else {
+     } else {
         this.x = InitXCoord;
         this.y = InitYCoord;
       }
@@ -76,7 +68,7 @@ class Rook extends Piece {
     int CurrentX = board.GetXIndexMouse(this.x);
     int CurrentY = board.GetYIndexMouse(this.y);
          
-    if (isBlack) {    // black pieces 
+    if (isBlack) {    // black rook 
       boolean StopUp = false , StopDown = false, StopRight = false, StopLeft = false;
 
       /* clear out old lists */
@@ -88,41 +80,53 @@ class Rook extends Piece {
           if (!StopRight) {
             try {
               if (squares[CurrentX + i][CurrentY].OccupiedWhite || squares[CurrentX + i][CurrentY].OccupiedBlack) {
-                RookAttackedSquaresBlack.add(squares[CurrentX + i][CurrentY]);
+                RookAttackedSquaresWhite.add(squares[CurrentX + i][CurrentY]);
+                squares[CurrentX + i][CurrentY].AttackedByBlack = true;
                 StopRight = true;
               }
-              else
+              else {
                 RookAttackedSquaresWhite.add(squares[CurrentX + i][CurrentY]);
+                squares[CurrentX + i][CurrentY].AttackedByBlack = true;
+              }
             } catch (IndexOutOfBoundsException e) {StopRight = true;}
           }
           if (!StopLeft) {
             try {
               if (squares[CurrentX - i][CurrentY].OccupiedWhite || squares[CurrentX - i][CurrentY].OccupiedBlack) {
                 RookAttackedSquaresWhite.add(squares[CurrentX - i][CurrentY]);
+                squares[CurrentX - i][CurrentY].AttackedByBlack = true;
                 StopLeft = true;
               }
-              else
+              else {
                 RookAttackedSquaresWhite.add(squares[CurrentX - i][CurrentY]);
+                squares[CurrentX - i][CurrentY].AttackedByBlack = true;
+              }
             } catch (IndexOutOfBoundsException e) {StopLeft = true;}
           }
           if (!StopDown) {
             try {
               if (squares[CurrentX][CurrentY + i].OccupiedWhite || squares[CurrentX][CurrentY + i].OccupiedBlack) {
                 RookAttackedSquaresWhite.add(squares[CurrentX][CurrentY + i]);
+                squares[CurrentX][CurrentY + i].AttackedByBlack = true;
                 StopDown = true;
               }
-              else
+              else {
                 RookAttackedSquaresWhite.add(squares[CurrentX][CurrentY + i]);
+                squares[CurrentX][CurrentY + i].AttackedByBlack = true;
+              }
             } catch (IndexOutOfBoundsException e) {StopDown = true;}
           }
           if (!StopUp) {
             try {
               if (squares[CurrentX][CurrentY - i].OccupiedWhite || squares[CurrentX][CurrentY - i].OccupiedBlack) {
                 RookAttackedSquaresWhite.add(squares[CurrentX][CurrentY - i]);
+                squares[CurrentX][CurrentY- i].AttackedByBlack = true;
                 StopUp = true;
               }
-              else
+              else {
                 RookAttackedSquaresWhite.add(squares[CurrentX][CurrentY - i]);
+                squares[CurrentX][CurrentY - i].AttackedByBlack = true;
+              }
             } catch (IndexOutOfBoundsException e) {StopUp = true;}
           }          
         }
@@ -132,7 +136,7 @@ class Rook extends Piece {
         }
       }
     }
-    else //white pieces
+    else //white rook
     {  
       boolean StopUp = false , StopDown = false, StopRight = false, StopLeft = false;
 
@@ -146,40 +150,52 @@ class Rook extends Piece {
             try {
               if (squares[CurrentX + i][CurrentY].OccupiedWhite || squares[CurrentX + i][CurrentY].OccupiedBlack) {
                 RookAttackedSquaresBlack.add(squares[CurrentX + i][CurrentY]);
+                squares[CurrentX + i][CurrentY].AttackedByWhite = true;
                 StopRight = true;
               }
-              else
+              else {
                 RookAttackedSquaresBlack.add(squares[CurrentX + i][CurrentY]);
+                squares[CurrentX + i][CurrentY].AttackedByWhite = true;
+              }
             } catch (IndexOutOfBoundsException e) {StopRight = true;}
           }
           if (!StopLeft) {
             try {
               if (squares[CurrentX - i][CurrentY].OccupiedWhite || squares[CurrentX - i][CurrentY].OccupiedBlack) {
                 RookAttackedSquaresBlack.add(squares[CurrentX - i][CurrentY]);
+                squares[CurrentX - i][CurrentY].AttackedByWhite = true;
                 StopLeft = true;
               }
-              else
+              else {
                 RookAttackedSquaresBlack.add(squares[CurrentX - i][CurrentY]);
+                squares[CurrentX - i][CurrentY].AttackedByWhite = true;
+              }
             } catch (IndexOutOfBoundsException e) {StopLeft = true;}
           }
           if (!StopDown) {
             try {
               if (squares[CurrentX][CurrentY + i].OccupiedWhite || squares[CurrentX][CurrentY + i].OccupiedBlack) {
                 RookAttackedSquaresBlack.add(squares[CurrentX][CurrentY + i]);
+                squares[CurrentX][CurrentY + i].AttackedByWhite = true;
                 StopDown = true;
               }
-              else
+              else {
                 RookAttackedSquaresBlack.add(squares[CurrentX][CurrentY + i]);
+                squares[CurrentX][CurrentY + i].AttackedByWhite = true;
+              }
             } catch (IndexOutOfBoundsException e) {StopDown = true;}
           }
           if (!StopUp) {
             try {
               if (squares[CurrentX][CurrentY - i].OccupiedWhite || squares[CurrentX][CurrentY - i].OccupiedBlack) {
                 RookAttackedSquaresBlack.add(squares[CurrentX][CurrentY - i]);
+                squares[CurrentX][CurrentY - i].AttackedByWhite = true;
                 StopUp = true;
               }
-              else
+              else {
                 RookAttackedSquaresBlack.add(squares[CurrentX][CurrentY - i]);
+                squares[CurrentX][CurrentY - i].AttackedByWhite = true;
+              }
             } catch (IndexOutOfBoundsException e) {StopUp = true;}
           }          
         }
@@ -190,8 +206,6 @@ class Rook extends Piece {
       }
     }
     
- //  AttackedSquaresLogging(board);
-
   }
   
   void KingPutInCheck(King [] kings) { 
@@ -200,7 +214,7 @@ class Rook extends Piece {
       for (Square s : RookAttackedSquaresWhite) {
         if (kings[0].x == s.x && kings[0].y == s.y) {
           kings[0].InCheck = true;     
-          kings[1].AttackedByThesePieces.add(this);
+          kings[0].AttackedByThesePieces.add(this);
         }
       }
     } else {
@@ -211,6 +225,7 @@ class Rook extends Piece {
         }
       }
     }
+        
   }
   
   void CastleMove(Rook [] rooks, Pawn [] pawns, King [] kings) {
@@ -401,8 +416,7 @@ class Rook extends Piece {
     return false;
   }
    
-   boolean Legal(StateChecker StateChecker, SquareCollection board, King [] kings)
-  { 
+   boolean Legal(StateChecker StateChecker, SquareCollection board, King [] kings) { 
     if (CheckBasicLegalMoves(board) && CheckTurnColor(StateChecker) && !YourKinginCheck(kings))    
       return true;
     else {

@@ -7,6 +7,7 @@ class King extends Piece
   boolean NoLegalMovesBlack, NoLegalMovesWhite;
   boolean AttackingPieceUncaptureableBlack, AttackingPieceUncaptureableWhite;
   boolean UnblockableAttackBlack, UnblockableAttackWhite;
+  boolean KingsideLegalBlack, QueensideLegalBlack, KingsideLegalWhite, QueensideLegalWhite;
   ArrayList <Piece> AttackedByThesePieces = new ArrayList<Piece>();
   ArrayList <Square> KingAttackedSquaresWhite = new ArrayList();
   ArrayList <Square> KingAttackedSquaresBlack = new ArrayList();
@@ -23,7 +24,7 @@ class King extends Piece
     image(KingImage, x + offsetx, y + offsety, l, l);
   }
   
-  void mouseReleased(SquareCollection board, ArrayList <Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks) {
+  void mouseReleased(SquareCollection board, ArrayList <Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) {
     if (active) {      
       GetXYChange(board, mouseX, mouseY);
       LockPieceToSquare(board.squares);
@@ -35,15 +36,7 @@ class King extends Piece
         if (AttackingMove)
           Capture(pieces);
         
-        for (King k : kings) {
-          k.UpdateAttackedSquares(board);
-        }
-        for (Pawn p : pawns) {
-          p.UpdateAttackedSquares(board);
-        }
-        for (Rook r : rooks) {
-          r.UpdateAttackedSquares(board);
-        }
+        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
           
         FirstMove = false;
         StateChecker.FlipColor();
@@ -54,8 +47,7 @@ class King extends Piece
         OutOfCheck(board.AttackedSquaresWhite, board.AttackedSquaresBlack);
                 
         AttackingMove = false;
-        
-        
+                
       } else {
         this.x = InitXCoord;
         this.y = InitYCoord;
@@ -264,27 +256,35 @@ class King extends Piece
       if (visible) {
         try {
           KingAttackedSquaresWhite.add(squares[CurrentX - 1][CurrentY + 1]);
+          squares[CurrentX - 1][CurrentY + 1].AttackedByBlack = true;
         } catch(IndexOutOfBoundsException e){}   
          try {
           KingAttackedSquaresWhite.add(squares[CurrentX][CurrentY + 1]);
+          squares[CurrentX][CurrentY + 1].AttackedByBlack = true;
         } catch(IndexOutOfBoundsException e){}   
         try {
           KingAttackedSquaresWhite.add(squares[CurrentX + 1][CurrentY + 1]);
+          squares[CurrentX + 1][CurrentY + 1].AttackedByBlack = true;
         } catch(IndexOutOfBoundsException e){}
         try {
           KingAttackedSquaresWhite.add(squares[CurrentX - 1][CurrentY]);
+          squares[CurrentX - 1][CurrentY].AttackedByBlack = true;
         } catch(IndexOutOfBoundsException e){}   
         try {
           KingAttackedSquaresWhite.add(squares[CurrentX + 1][CurrentY]);
+          squares[CurrentX + 1][CurrentY].AttackedByBlack = true;
         } catch(IndexOutOfBoundsException e){}   
         try {
           KingAttackedSquaresWhite.add(squares[CurrentX - 1][CurrentY - 1]);
+          squares[CurrentX - 1][CurrentY - 1].AttackedByBlack = true;
         } catch(IndexOutOfBoundsException e){}   
         try {
           KingAttackedSquaresWhite.add(squares[CurrentX][CurrentY - 1]);
+          squares[CurrentX][CurrentY - 1].AttackedByBlack = true;
         } catch(IndexOutOfBoundsException e){}   
         try {
           KingAttackedSquaresWhite.add(squares[CurrentX + 1][CurrentY - 1]);
+          squares[CurrentX + 1][CurrentY - 1].AttackedByBlack = true;
         } catch(IndexOutOfBoundsException e){}   
         
         for (Square s : KingAttackedSquaresWhite) {
@@ -299,27 +299,35 @@ class King extends Piece
       if (visible) {
         try {
           KingAttackedSquaresBlack.add(squares[CurrentX - 1][CurrentY + 1]);
+          squares[CurrentX - 1][CurrentY + 1].AttackedByWhite = true;
         } catch(IndexOutOfBoundsException e){}   
          try {
           KingAttackedSquaresBlack.add(squares[CurrentX][CurrentY + 1]);
+          squares[CurrentX][CurrentY + 1].AttackedByWhite = true;
         } catch(IndexOutOfBoundsException e){}   
         try {
           KingAttackedSquaresBlack.add(squares[CurrentX + 1][CurrentY + 1]);
+          squares[CurrentX + 1][CurrentY + 1].AttackedByWhite = true;
         } catch(IndexOutOfBoundsException e){}
         try {
           KingAttackedSquaresBlack.add(squares[CurrentX - 1][CurrentY]);
+          squares[CurrentX - 1][CurrentY].AttackedByWhite = true;
         } catch(IndexOutOfBoundsException e){}   
         try {
           KingAttackedSquaresBlack.add(squares[CurrentX + 1][CurrentY]);
+          squares[CurrentX + 1][CurrentY].AttackedByWhite = true;
         } catch(IndexOutOfBoundsException e){}   
         try {
           KingAttackedSquaresBlack.add(squares[CurrentX - 1][CurrentY - 1]);
+          squares[CurrentX - 1][CurrentY - 1].AttackedByWhite = true;
         } catch(IndexOutOfBoundsException e){}   
         try {
           KingAttackedSquaresBlack.add(squares[CurrentX][CurrentY - 1]);
+          squares[CurrentX][CurrentY - 1].AttackedByWhite = true;
         } catch(IndexOutOfBoundsException e){}   
         try {
           KingAttackedSquaresBlack.add(squares[CurrentX + 1][CurrentY - 1]);
+          squares[CurrentX + 1][CurrentY - 1].AttackedByWhite = true;
         } catch(IndexOutOfBoundsException e){}
         
         for (Square s : KingAttackedSquaresBlack) {
@@ -365,8 +373,7 @@ class King extends Piece
       else
         UnblockableAttackWhite = true;
     }
-   
-     
+        
     if (AttackedByThesePieces.get(0).getClass().getSimpleName().equals("Pawn")) {    // if attacked by pawn
       //Pawn attacks can't be blocked
       
@@ -494,8 +501,26 @@ class King extends Piece
       }
       
     }
-      
-      
+    
+    if (AttackedByThesePieces.get(0).getClass().getSimpleName().equals("Bishop") { // if attacked by bishop
+      //TODO TODO TODO ///
+    }
+            
+  }
+  
+  void EmptyCastleLane (Square [][] squares) {
+    if (isBlack) {
+      if (!squares[5][0].OccupiedBlack && !squares[5][0].OccupiedWhite && !squares[6][0].OccupiedBlack && !squares[6][0].OccupiedWhite)
+        KingsideLegalBlack = true;
+      if (!squares[3][0].OccupiedBlack && !squares[3][0].OccupiedWhite && !squares[2][0].OccupiedBlack && !squares[2][0].OccupiedWhite && !squares[1][0].OccupiedBlack && !squares[1][0].OccupiedWhite)
+        QueensideLegalBlack = true;
+    }
+    else {
+      if (!squares[5][7].OccupiedBlack && !squares[5][7].OccupiedWhite && !squares[6][7].OccupiedBlack && !squares[6][7].OccupiedWhite)
+        KingsideLegalWhite = true;
+      if (!squares[3][7].OccupiedBlack && !squares[3][7].OccupiedWhite && !squares[2][7].OccupiedBlack && !squares[2][7].OccupiedWhite && !squares[1][7].OccupiedBlack && !squares[1][0].OccupiedWhite)
+        QueensideLegalWhite = true;
+    }
   }
   
   boolean IsSquareAttacked(ArrayList <Square> AttackedSquaresWhite, ArrayList <Square> AttackedSquaresBlack) {
@@ -514,14 +539,17 @@ class King extends Piece
       return false;
     }
   }
-  boolean CheckBasicLegalMoves(Square [][] Squares, Rook [] rooks, Pawn [] pawns, King [] kings) {  
+  boolean CheckBasicLegalMoves(Square [][] Squares, Rook [] rooks, Pawn [] pawns, King [] kings) { 
+    EmptyCastleLane(Squares); // checks to see if empty lanes are open for white or black to castle
+                              // turns on booleans kingside/queenside legal for either color
+    
     for (Square [] rows : Squares) {
       for (int i = 0; i < rows.length; i++) {
         if (rows[i].active) {
-          if ((XChange == 1 || XChange == 0 || XChange == -1) && (YChange == 0 || YChange == 1 || YChange == -1) && !isBlack && !rows[i].OccupiedWhite) {
-            
+          
+          if ((XChange == 1 || XChange == 0 || XChange == -1) && (YChange == 0 || YChange == 1 || YChange == -1) && !isBlack && !rows[i].OccupiedWhite) {           
             //Check for capture
-            if (rows[i].OccupiedBlack) {
+            if (rows[i].OccupiedBlack && !rows[i].AttackedByBlack) {
               AttackingMove = true;
               CapturedOnX = (int) rows[i].x;
               CapturedOnY = (int) rows[i].y;
@@ -530,7 +558,7 @@ class King extends Piece
             return true;
           }
           else if ((XChange == 1 || XChange == 0 || XChange == -1) && (YChange == 0 || YChange == 1 || YChange == -1) && isBlack && !rows[i].OccupiedBlack) {
-            if (rows[i].OccupiedWhite) {
+            if (rows[i].OccupiedWhite && !rows[i].AttackedByWhite) {
               AttackingMove = true;
               CapturedOnX = (int) rows[i].x;
               CapturedOnY = (int) rows[i].y;
@@ -539,22 +567,22 @@ class King extends Piece
             return true;
           }
           
-          else if (FirstMove && !isBlack && XChange == -2 && rooks[0].FirstMove) {
+          else if (FirstMove && !isBlack && XChange == -2 && rooks[0].FirstMove && QueensideLegalWhite && !InCheck) {    //Queenside White Castle  
             rooks[0].CastleMove(rooks, pawns, kings);
             return true;
           }
           
-          else if (FirstMove && !isBlack && XChange == 2 && rooks[1].FirstMove) {
+          else if (FirstMove && !isBlack && XChange == 2 && rooks[1].FirstMove && KingsideLegalWhite && !InCheck) {      //Kingside White Castle
             rooks[1].CastleMove(rooks, pawns, kings);
             return true;
           }
           
-          else if (FirstMove && isBlack && XChange == -2 && rooks[2].FirstMove) {
+          else if (FirstMove && isBlack && XChange == -2 && rooks[2].FirstMove && QueensideLegalBlack && !InCheck) {    // Queenside Black Castle
             rooks[2].CastleMove(rooks, pawns, kings);
             return true;
           }
           
-          else if (FirstMove && isBlack && XChange == 2 && rooks[3].FirstMove) {
+          else if (FirstMove && isBlack && XChange == 2 && rooks[3].FirstMove && KingsideLegalBlack && !InCheck) {      // Kingside Black Castle
             rooks[3].CastleMove(rooks, pawns, kings);
             return true;
           }
@@ -563,7 +591,14 @@ class King extends Piece
         }
       }
     }
-    return false;
+    
+    ////// Turn off all legal castle moves that may have been true
+    KingsideLegalWhite = false;
+    QueensideLegalWhite = false;
+    KingsideLegalBlack = false;
+    QueensideLegalBlack = false;
+    
+    return false;   
   } 
   
   boolean Legal(StateChecker StateChecker, SquareCollection board, Rook [] rooks, Pawn [] pawns, King [] kings) {
