@@ -54,7 +54,6 @@ class Piece {
     //Make piece invisible
     for (Piece pi : pieces) {
       if (pi.x == CapturedOnX && pi.y == CapturedOnY && RightCaptureColor(pi.isBlack) && pi.visible) {
-        println(BlackIsCaptured, pi.isBlack);
         pi.visible = false;
       }
     }
@@ -150,23 +149,52 @@ class Piece {
     }
   }
   
-  void UpdateForDiscoveredCheck(King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) {
+  void KingPutInCheckAllPieces(SquareCollection board, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) {
+    kings[0].InCheck = false; kings[1].InCheck = false;
+    
     for (Pawn p : pawns) {
       p.KingPutInCheck(kings);
     }
     for (Rook r : rooks) {
-      r.KingPutInCheck(kings);
+      r.KingPutInCheck(kings, board);
     }
     for (Bishop b : bishops) {
       b.KingPutInCheck(kings);
     }
   }
   
-  boolean CheckForCheckmate(SquareCollection board, Rook [] rooks, King [] kings) {
-    if (isBlack && kings[0].Checkmate(board, rooks))
+  void ValidMoveAllPieces(Rook [] rooks, Bishop [] bishops, King AttackedKing, int x, int y) {
+    for (Rook r : rooks) {
+      if (isBlack) {
+        if (r.isBlack) {
+          if (r.ValidMove(board, x, y))
+            AttackedKing.UnblockableAttackBlack = false;
+        }
+        else {
+          if (r.ValidMove(board, x, y))
+            AttackedKing.UnblockableAttackWhite = false;
+        }
+      }
+    }
+    for (Bishop b : bishops) {
+      if (isBlack) {
+        if (b.isBlack) {
+          if (b.ValidMove(board, x, y))
+            AttackedKing.UnblockableAttackBlack = false;
+        }
+      }
+      else {
+        if (b.ValidMove(board, x, y))
+            AttackedKing.UnblockableAttackWhite = false;
+      }
+    }
+  }
+  
+  boolean CheckForCheckmate(SquareCollection board, Rook [] rooks, King [] kings, Bishop [] bishops) {
+    if (isBlack && kings[0].Checkmate(board, rooks, bishops))
       return true;
       
-    else if (!isBlack && kings[1].Checkmate(board,rooks))
+    else if (!isBlack && kings[1].Checkmate(board,rooks, bishops))
       return true;
     
     else return false;    
@@ -231,7 +259,7 @@ class Piece {
     else return false;
   }
   
-  boolean YourKinginCheck(King [] kings) {
+  boolean YourKingInCheck(King [] kings) {
     if (isBlack && kings[1].InCheck)
       return true;
     else if (!isBlack && kings[0].InCheck)
@@ -239,7 +267,46 @@ class Piece {
     else return false;
   }
   
+  boolean AttackingTheAttacker(King [] kings) {
+    // if a king is attacked by more than one piece the only legal move is by a king
+    if (kings[1].AttackedByThesePieces.size() > 1
+     || kings[0].AttackedByThesePieces.size() > 1)
+       return false;
+    
+    // attacking the attacker for black
+    if (isBlack) {
+      if (this.x == kings[1].AttackedByThesePieces.get(0).x 
+       && this.y == kings[1].AttackedByThesePieces.get(0).y)  // if coords are equal to coords of attacker
+         return true;
+       
+    }
+    
+    // attacking the attacker for white
+    else if (!isBlack) {
+      if (this.x == kings[0].AttackedByThesePieces.get(0).x 
+       && this.y == kings[0].AttackedByThesePieces.get(0).y)  // if coords are equal to coords of attacker
+         return true;
+    }     
+     
+     return false;
+  }
   
+  boolean BlockingMove(King [] kings) {
+    if (isBlack) {
+      for (Square s : kings[1].BetweenAttackerAndKing) {
+        if (this.x == s.x && this.y == s.y) 
+          return true;
+      }
+    }
+    else {
+      for (Square s : kings[0].BetweenAttackerAndKing) {
+        if (this.x == s.x && this.y == s.y) 
+          return true;
+      }
+    }
+    
+    return false;
+  }
   
   
 }

@@ -21,30 +21,27 @@ class Rook extends Piece {
     if (active && visible) {      
       GetXYChange(board, mouseX, mouseY);
       LockPieceToSquare(board.squares);
-      active = false;      
+      active = false;
       
       if (Legal(StateChecker, board, kings)) 
       {  
-        UpdateXYIndices(board);
-        
-        if (AttackingMove) 
+       if (AttackingMove) 
           Capture(pieces);
-               
-        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
+          
+        AttackingMove = false;
         
-        FirstMove = false;
         StateChecker.FlipColor();
+          
+        UpdateXYIndices(board);
+          
+        UpdateAttackedSquares(board);
         
+        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
+          
         UpdateOccupiedSquares(board, pieces);
         
-        AttackedSquaresLogging(board);
-        KingPutInCheck(kings);
-        
-        AttackingMove = false;
-      
-       if (CheckForCheckmate(board, rooks, kings))
-          println("mate");
-      
+        KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops);
+                                     
      } else {
         this.x = InitXCoord;
         this.y = InitYCoord;
@@ -208,13 +205,15 @@ class Rook extends Piece {
     
   }
   
-  void KingPutInCheck(King [] kings) { 
+  void KingPutInCheck(King [] kings, SquareCollection board) { 
    //kings[0] == white king, kings[1] == black king
     if (isBlack) {
       for (Square s : RookAttackedSquaresWhite) {
         if (kings[0].x == s.x && kings[0].y == s.y) {
           kings[0].InCheck = true;     
           kings[0].AttackedByThesePieces.add(this);
+          
+          CalcSquaresBetweenThisAndKing(kings, board);
         }
       }
     } else {
@@ -222,13 +221,57 @@ class Rook extends Piece {
         if (kings[1].x == s.x && kings[1].y == s.y) {
           kings[1].InCheck = true;
           kings[1].AttackedByThesePieces.add(this);
+          
+          CalcSquaresBetweenThisAndKing(kings, board);
         }
       }
     }
         
   }
   
-  void CastleMove(Rook [] rooks, Pawn [] pawns, King [] kings) {
+  void CalcSquaresBetweenThisAndKing(King [] kings, SquareCollection board) {
+    int XDiff, YDiff;                        // holds diff in x between attacker and king
+    King EnemyKing = new King();             // holds diff in y between attacker and king
+    
+    kings[0].BetweenAttackerAndKing.clear(); // clear out old list for white king
+    kings[1].BetweenAttackerAndKing.clear(); // clear out old list for black king
+    
+    if (isBlack) 
+     EnemyKing = kings[0];
+    else
+     EnemyKing = kings[1];
+     
+     XDiff = this.XInd - EnemyKing.XInd;
+     YDiff = this.YInd - EnemyKing.YInd; 
+            
+      ///////// rook attacking from BELOW king  /////////////
+      if (YDiff > 0) {                   
+        for (int y = EnemyKing.YInd + 1; y < this.YInd; y++) {
+            EnemyKing.BetweenAttackerAndKing.add(board.squares[this.XInd][y]); // add this square to white king's squares
+        }
+      }
+      ///////// rook attacking from ABOVE king  /////////////
+      if (YDiff < 0) {                   
+        for (int y = EnemyKing.YInd - 1 ; y > this.YInd; y--) {
+            EnemyKing.BetweenAttackerAndKing.add(board.squares[this.XInd][y]); // add this square to white king's squares
+        }
+      }
+      ///////// rook attacking from LEFT of king  /////////////
+      if (XDiff < 0) {                   
+        for (int x = EnemyKing.XInd - 1; x > this.XInd; x--) {
+            EnemyKing.BetweenAttackerAndKing.add(board.squares[x][this.YInd]); // add this square to white king's squares
+        }
+      }
+      ///////// rook attacking from RIGHT of king  /////////////
+      if (XDiff > 0) {                   
+        for (int x = EnemyKing.XInd + 1; x < this.XInd; x++) {
+            EnemyKing.BetweenAttackerAndKing.add(board.squares[x][this.YInd]); // add this square to white king's squares
+        }
+      }
+        
+  }
+  
+  void CastleMove(King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) {
     
     // Move Rook
     if (x == 0)
@@ -252,12 +295,9 @@ class Rook extends Piece {
     UpdateOccupiedSquares(board, pieces);
     //OnAttackedSquare(board.AttackedSquaresWhite, board.AttackedSquaresBlack);
     
-    KingPutInCheck(kings);
-    
-    if (kings[1].InCheck) 
-      kings[1].CanMoveBeBlocked(board, rooks);
+    KingPutInCheck(kings, board);
       
-    if (CheckForCheckmate(board, rooks, kings))
+    if (CheckForCheckmate(board, rooks, kings, bishops))
       println("mate");
   }
     
@@ -417,9 +457,15 @@ class Rook extends Piece {
   }
    
    boolean Legal(StateChecker StateChecker, SquareCollection board, King [] kings) { 
-    if (CheckBasicLegalMoves(board) && CheckTurnColor(StateChecker) && !YourKinginCheck(kings))    
-      return true;
-    else {
+    if (CheckBasicLegalMoves(board) && CheckTurnColor(StateChecker)) {
+      if (YourKingInCheck(kings)) { 
+        if (AttackingTheAttacker(kings) || BlockingMove(kings))
+          return true;       
+        else return false;
+      }
+      
+      return true; // return true if king is not in check
+    } else {
       println(CheckBasicLegalMoves(board) + " , " + CheckTurnColor(StateChecker));
       return false;
     }

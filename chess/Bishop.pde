@@ -34,15 +34,13 @@ class Bishop extends Piece {
         UpdateXYIndices(board);
           
         UpdateAttackedSquares(board);
+        
         UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
           
         UpdateOccupiedSquares(board, pieces);
         
-        UpdateForDiscoveredCheck(kings, pawns, rooks, bishops);
-                      
-       if (CheckForCheckmate(board, rooks, kings))
-          println("mate");
-      
+        KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops); 
+        
      } else {
         this.x = InitXCoord;
         this.y = InitYCoord;
@@ -131,7 +129,7 @@ class Bishop extends Piece {
     
     else //white bishop
     {  
-       boolean StopUpRight = false , StopUpLeft = false, StopDownRight = false, StopDownLeft = false;
+      boolean StopUpRight = false , StopUpLeft = false, StopDownRight = false, StopDownLeft = false;
 
       /* clear out old lists */
       ClearAttackedSquares(BishopAttackedSquaresWhite, BishopAttackedSquaresBlack, false);
@@ -222,7 +220,33 @@ class Bishop extends Piece {
       }
     }        
   }
-
+  
+    void CalcSquaresBetweenThisAndKing(King [] kings, SquareCollection board) {
+    int XDiff, YDiff;                        // holds diff in x between attacker and king
+    King EnemyKing = new King();             // holds diff in y between attacker and king
+    
+    kings[0].BetweenAttackerAndKing.clear(); // clear out old list for white king
+    kings[1].BetweenAttackerAndKing.clear(); // clear out old list for black king
+    
+    if (isBlack) 
+     EnemyKing = kings[0];
+    else
+     EnemyKing = kings[1];
+     
+     XDiff = this.XInd - EnemyKing.XInd;
+     YDiff = this.YInd - EnemyKing.YInd; 
+            
+      ///////// bishop attacking from above right king  /////////////
+      
+      ///////// rook attacking from ABOVE king  /////////////
+      
+      ///////// rook attacking from LEFT of king  /////////////
+      
+      ///////// rook attacking from RIGHT of king  /////////////
+      
+        
+  }
+  
   boolean ValidMove(SquareCollection board, int SquareXInd, int SquareYInd) {
     int XDiff = SquareXInd - this.XInd;
     int YDiff = SquareYInd - this.YInd;
@@ -379,9 +403,17 @@ class Bishop extends Piece {
   }
   
    boolean Legal(StateChecker StateChecker, SquareCollection board, King [] kings) { 
-    if (CheckBasicLegalMoves(board) && CheckTurnColor(StateChecker) && !YourKinginCheck(kings))    
-      return true;
-    else {
+    if (CheckBasicLegalMoves(board) && CheckTurnColor(StateChecker)) {
+      if (YourKingInCheck(kings)) {         
+        if (AttackingTheAttacker(kings) || BlockingMove(kings)) {
+          return true;      
+        }
+        else return false;
+      }
+      
+      return true; // return true if king is not in check
+    } else {
+
       println(CheckBasicLegalMoves(board) + " , " + CheckTurnColor(StateChecker));
       return false;
     }

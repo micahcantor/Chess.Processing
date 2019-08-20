@@ -28,26 +28,26 @@ class Pawn extends Piece //<>//
 
     // if legal move :
       if (Legal(StateChecker, board.squares, kings)) {  
-        UpdateXYIndices(board);
-        
-        if (AttackingMove) {                            // Capture if attacking move
+       if (AttackingMove) 
           Capture(pieces);
-        }
-     
-        // Update attacked squares for all pieces
-        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
+          
+        AttackingMove = false;
         
-        FirstMove = false;
         StateChecker.FlipColor();
+          
+        UpdateXYIndices(board);
+          
+        UpdateAttackedSquares(board);
         
-        UpdateOccupiedSquares(SquareCollection, pieces);  // Piece moved so occupied squares changes
-        KingPutInCheck(kings);                            // Check if king is now in check (and if this piece is now an attacker of king)
-        
-        AttackingMove = false;                            // turns attacking move back to false
-        
-        if (CheckForCheckmate(board, rooks, kings))
+        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
+          
+        UpdateOccupiedSquares(board, pieces);
+                
+        KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops);
+                              
+       if (CheckForCheckmate(board, rooks, kings, bishops))
           println("mate");
-     
+
     // if not a legal move, return piece to original coords
     } else {
         this.x = InitXCoord;
@@ -191,9 +191,19 @@ class Pawn extends Piece //<>//
 
   boolean Legal(StateChecker StateChecker, Square [][] Squares, King [] kings)
   { 
-    if (CheckBasicLegalMoves(Squares) && CheckTurnColor(StateChecker) && !YourKinginCheck(kings))    
-      return true;
-    else return false;
+     if (CheckBasicLegalMoves(Squares) && CheckTurnColor(StateChecker)) {
+      if (YourKingInCheck(kings)) { 
+        println("here" + AttackingTheAttacker(kings) , BlockingMove(kings));
+        if (AttackingTheAttacker(kings) || BlockingMove(kings))
+          return true;       
+        else return false;
+      }
+      
+      return true; // return true if king is not in check
+    } else {
+      println(CheckBasicLegalMoves(Squares) + " , " + CheckTurnColor(StateChecker));
+      return false;
+    }    
   }
   
   

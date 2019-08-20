@@ -106,6 +106,10 @@ void mouseReleased()
   kings.mouseReleased(board, pieces, kings.kings, pawns.pawns, rooks.rooks, bishops.bishops);
   rooks.mouseReleased(board, rooks.rooks, kings.kings, pawns.pawns, bishops.bishops);
   bishops.mouseReleased(board, rooks.rooks, kings.kings, pawns.pawns, bishops.bishops);
-  kings.kings[0].AttackedSquaresLogging(board);
+  
+  if (StateChecker.WhiteTurn == true)
+    println("White Turn");
+  if (StateChecker.WhiteTurn == false)
+    println("Black Turn");
   redraw(); 
 }

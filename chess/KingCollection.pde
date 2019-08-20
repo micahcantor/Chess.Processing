@@ -12,8 +12,8 @@ class KingCollection
   void createKings(ArrayList<Piece> pieces)
   {
     kings = new King [2];
-    kings[0] = new King(WhiteKing, false, 240, 420);
-    kings[1] = new King(BlackKing, true, 240, 0); 
+    kings[0] = new King(WhiteKing, false, 240, 420, 4, 7);
+    kings[1] = new King(BlackKing, true, 240, 0, 4, 0); 
     
     for (King k : kings) {
       pieces.add(k);
