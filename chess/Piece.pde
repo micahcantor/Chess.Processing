@@ -159,7 +159,7 @@ class Piece {
       r.KingPutInCheck(kings, board);
     }
     for (Bishop b : bishops) {
-      b.KingPutInCheck(kings);
+      b.KingPutInCheck(kings, board);
     }
   }
   

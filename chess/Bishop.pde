@@ -32,9 +32,7 @@ class Bishop extends Piece {
         StateChecker.FlipColor();
           
         UpdateXYIndices(board);
-          
-        UpdateAttackedSquares(board);
-        
+                  
         UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
           
         UpdateOccupiedSquares(board, pieces);
@@ -202,13 +200,15 @@ class Bishop extends Piece {
     }
   }
   
-  void KingPutInCheck(King [] kings) { 
+  void KingPutInCheck(King [] kings, SquareCollection board) { 
    //kings[0] == white king, kings[1] == black king
     if (isBlack) {
       for (Square s : BishopAttackedSquaresWhite) {
         if (kings[0].x == s.x && kings[0].y == s.y) {
           kings[0].InCheck = true;     
           kings[0].AttackedByThesePieces.add(this);
+          
+          CalcSquaresBetweenThisAndKing(kings, board);
         }
       }
     } else {
@@ -216,12 +216,14 @@ class Bishop extends Piece {
         if (kings[1].x == s.x && kings[1].y == s.y) {
           kings[1].InCheck = true;
           kings[1].AttackedByThesePieces.add(this);
+          
+          CalcSquaresBetweenThisAndKing(kings, board);
         }
       }
     }        
   }
   
-    void CalcSquaresBetweenThisAndKing(King [] kings, SquareCollection board) {
+ void CalcSquaresBetweenThisAndKing(King [] kings, SquareCollection board) {
     int XDiff, YDiff;                        // holds diff in x between attacker and king
     King EnemyKing = new King();             // holds diff in y between attacker and king
     
@@ -236,13 +238,30 @@ class Bishop extends Piece {
      XDiff = this.XInd - EnemyKing.XInd;
      YDiff = this.YInd - EnemyKing.YInd; 
             
-      ///////// bishop attacking from above right king  /////////////
-      
-      ///////// rook attacking from ABOVE king  /////////////
-      
-      ///////// rook attacking from LEFT of king  /////////////
-      
+     ///////// bishop attacking from above left of king  /////////////
+      if (YDiff < 0 && XDiff < 0) {                   
+        for (int y = EnemyKing.YInd - 1, x = EnemyKing.XInd - 1; y > this.YInd; y--, x--) {
+            EnemyKing.BetweenAttackerAndKing.add(board.squares[x][y]); // add this square to white king's squares
+        }
+      }
+      ///////// bishop attacking from above right of king  /////////////
+      if (YDiff < 0 && XDiff > 0) {                   
+        for (int y = EnemyKing.YInd - 1, x = EnemyKing.XInd + 1; y > this.YInd; y--, x++) {
+            EnemyKing.BetweenAttackerAndKing.add(board.squares[x][y]); // add this square to white king's squares
+        }
+      }
+      ///////// rook attacking from below left of king of king  /////////////
+      if (YDiff > 0 && XDiff < 0) {                   
+        for (int y = EnemyKing.YInd + 1, x = EnemyKing.XInd - 1; y < this.YInd; y++, x--) {
+            EnemyKing.BetweenAttackerAndKing.add(board.squares[x][y]); // add this square to white king's squares
+        }
+      }
       ///////// rook attacking from RIGHT of king  /////////////
+       if (YDiff > 0 && XDiff > 0) {                   
+        for (int y = EnemyKing.YInd + 1, x = EnemyKing.XInd + 1; y < this.YInd; y++, x++) {
+            EnemyKing.BetweenAttackerAndKing.add(board.squares[x][y]); // add this square to white king's squares
+        }
+      }
       
         
   }

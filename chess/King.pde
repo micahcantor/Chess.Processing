@@ -44,7 +44,7 @@ class King extends Piece
           
         UpdateXYIndices(board);
           
-        UpdateAttackedSquares(board);
+    //    UpdateAttackedSquares(board);
         
         UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
           

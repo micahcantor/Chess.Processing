@@ -33,9 +33,7 @@ class Rook extends Piece {
         StateChecker.FlipColor();
           
         UpdateXYIndices(board);
-          
-        UpdateAttackedSquares(board);
-        
+                  
         UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
           
         UpdateOccupiedSquares(board, pieces);
