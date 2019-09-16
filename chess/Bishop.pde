@@ -1,7 +1,8 @@
 class Bishop extends Piece {
   PImage BishopImage;
   ArrayList <Square> BishopAttackedSquaresWhite = new ArrayList();
-  ArrayList <Square> BishopAttackedSquaresBlack = new ArrayList();  
+  ArrayList <Square> BishopAttackedSquaresBlack = new ArrayList();
+  boolean StopUpRightPin = false, StopDownRightPin = false, StopDownLeftPin = false, StopUpLeftPin = false;
   
   public Bishop(PImage _BishopImage, boolean _isBlack, float _x, float _y) {
     BishopImage = _BishopImage;
@@ -16,27 +17,29 @@ class Bishop extends Piece {
       image(BishopImage, x + offsetx, y + offsety, l, l);
   }
   
-  void mouseReleased(SquareCollection board, Rook [] rooks, King [] kings, Pawn [] pawns, Bishop [] bishops) {
+  void mouseReleased(SquareCollection board, ArrayList <Piece> pieces, Rook [] rooks, King [] kings, Pawn [] pawns, Bishop [] bishops) {
     if (active && visible) {      
       GetXYChange(board, mouseX, mouseY);
       LockPieceToSquare(board.squares);
-      active = false;      
+      active = false; 
       
-      if (Legal(StateChecker, board, kings)) 
+      CheckIfPinned(board, pieces, rooks, bishops);
+
+      if (Legal(board, pieces, kings, pawns, rooks, bishops)) 
       { 
         if (AttackingMove) 
           Capture(pieces);
           
         AttackingMove = false;
-        
+               
         StateChecker.FlipColor();
           
         UpdateXYIndices(board);
-                  
-        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
-          
+        
         UpdateOccupiedSquares(board, pieces);
         
+        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
+          
         KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops); 
         
      } else {
@@ -103,7 +106,6 @@ class Bishop extends Piece {
               }
             } catch (IndexOutOfBoundsException e) {StopDownRight = true;}
           }
-          
           if (!StopDownLeft) {
             try {
               if (squares[CurrentX - i][CurrentY + i].OccupiedWhite || squares[CurrentX - i][CurrentY + i].OccupiedBlack) {
@@ -200,15 +202,101 @@ class Bishop extends Piece {
     }
   }
   
+  void UpdatePinnedSquares(SquareCollection board) {    
+    
+    StopUpRightPin = false; StopDownRightPin = false; StopDownLeftPin = false; StopUpLeftPin = false;
+    
+    if (visible) {
+        for (int i = 1; i < 8; i++) {
+          if (!StopUpRightPin)
+            PinnedSqAlg(board, i, 1, 1);
+          if (!StopUpLeftPin)
+            PinnedSqAlg(board, i, -1, 1);
+          if (!StopDownRightPin)
+            PinnedSqAlg(board, i, 1, -1);
+          if (!StopDownLeftPin)
+            PinnedSqAlg(board, i, -1, -1);
+        }
+          
+     }               
+    
+  }
+  
+   void PinnedSqAlg(SquareCollection board, int i, int XPlus, int YPlus) {
+    
+    // Method that runs before a piece's move is declared legal
+    // Loops through all squares it attacks:
+      // if it sees a king, a piece in pinned
+      // if it sees another piece, nothing is pinned
+    int CurrentX = board.GetXIndexMouse(this.x);
+    int CurrentY = board.GetYIndexMouse(this.y);
+    
+    if (isBlack) {
+      try {
+        if (board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedWhitePin || 
+            board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedBlackPin) {  //occupied by a pieces
+          
+          if (XPlus == 1 & YPlus == 1)
+            StopUpRightPin = true;
+          if (XPlus == -1 & YPlus == 1)
+            StopUpLeftPin = true;
+          if (XPlus == 1 & YPlus == -1)
+            StopDownRightPin = true;
+          if (XPlus == -1 & YPlus == -1)
+            StopUpLeftPin = true;
+            
+          return;
+        }
+        
+        if (board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedWhiteKing) {
+          board.PinnedWhitePiece = true;
+          println("pinned pc");
+          return;
+        }
+        
+                                                          
+      }
+      catch (IndexOutOfBoundsException e) {return;}
+    }
+    else {
+      try { 
+        if ((board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedWhitePin || 
+            board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedBlackPin)) {
+
+         if (XPlus == 1 & YPlus == 1)
+            StopUpRightPin = true;
+          if (XPlus == -1 & YPlus == 1)
+            StopUpLeftPin = true;
+          if (XPlus == 1 & YPlus == -1)
+            StopDownRightPin = true;
+          if (XPlus == -1 & YPlus == -1)
+            StopUpLeftPin = true;
+            
+          return;
+        }
+        
+        else if (board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedBlackKing) {
+          board.PinnedBlackPiece = true;
+          println("pinned pc"  );
+          return;
+        }
+                                                          
+      }
+      catch (IndexOutOfBoundsException e) {return;}
+    }
+    
+  }
+  
   void KingPutInCheck(King [] kings, SquareCollection board) { 
    //kings[0] == white king, kings[1] == black king
     if (isBlack) {
       for (Square s : BishopAttackedSquaresWhite) {
         if (kings[0].x == s.x && kings[0].y == s.y) {
-          kings[0].InCheck = true;     
+          kings[0].InCheck = true;  
           kings[0].AttackedByThesePieces.add(this);
           
           CalcSquaresBetweenThisAndKing(kings, board);
+          
         }
       }
     } else {
@@ -218,6 +306,7 @@ class Bishop extends Piece {
           kings[1].AttackedByThesePieces.add(this);
           
           CalcSquaresBetweenThisAndKing(kings, board);
+          
         }
       }
     }        
@@ -256,15 +345,14 @@ class Bishop extends Piece {
             EnemyKing.BetweenAttackerAndKing.add(board.squares[x][y]); // add this square to white king's squares
         }
       }
-      ///////// rook attacking from RIGHT of king  /////////////
+      ///////// bishop attacking from below right of king  /////////////
        if (YDiff > 0 && XDiff > 0) {                   
         for (int y = EnemyKing.YInd + 1, x = EnemyKing.XInd + 1; y < this.YInd; y++, x++) {
             EnemyKing.BetweenAttackerAndKing.add(board.squares[x][y]); // add this square to white king's squares
         }
-      }
-      
-        
+      }              
   }
+ 
   
   boolean ValidMove(SquareCollection board, int SquareXInd, int SquareYInd) {
     int XDiff = SquareXInd - this.XInd;
@@ -421,8 +509,11 @@ class Bishop extends Piece {
     return false;
   }
   
-   boolean Legal(StateChecker StateChecker, SquareCollection board, King [] kings) { 
-    if (CheckBasicLegalMoves(board) && CheckTurnColor(StateChecker)) {
+   boolean Legal(SquareCollection board, ArrayList<Piece> Pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) { 
+    
+    if (board.PinnedPieceMoved(isBlack))
+      println("pinned");
+    if (CheckBasicLegalMoves(board) && CheckTurnColor(StateChecker) && !board.PinnedPieceMoved(isBlack)) {      
       if (YourKingInCheck(kings)) {         
         if (AttackingTheAttacker(kings) || BlockingMove(kings)) {
           return true;      
@@ -431,10 +522,8 @@ class Bishop extends Piece {
       }
       
       return true; // return true if king is not in check
-    } else {
-
-      println(CheckBasicLegalMoves(board) + " , " + CheckTurnColor(StateChecker));
+    } else { 
       return false;
-    }
+   }
   }
 }

@@ -2,7 +2,10 @@
 class Rook extends Piece {
   PImage RookImage;
   ArrayList <Square> RookAttackedSquaresWhite = new ArrayList();
-  ArrayList <Square> RookAttackedSquaresBlack = new ArrayList();  
+  ArrayList <Square> RookAttackedSquaresBlack = new ArrayList();
+  boolean StopUp = false , StopDown = false, StopRight = false, StopLeft = false;
+  boolean StopUpPin = false, StopDownPin = false, StopRightPin = false, StopLeftPin = false;
+
   
   public Rook(PImage _RookImage, boolean _isBlack, float _x, float _y) {
     RookImage = _RookImage;
@@ -17,13 +20,15 @@ class Rook extends Piece {
       image(RookImage, x + offsetx, y + offsety, l, l);
   }
   
-  void mouseReleased(SquareCollection board, Rook [] rooks, King [] kings, Pawn [] pawns, Bishop [] bishops) {
+  void mouseReleased(SquareCollection board, ArrayList<Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) {
     if (active && visible) {      
       GetXYChange(board, mouseX, mouseY);
       LockPieceToSquare(board.squares);
       active = false;
       
-      if (Legal(StateChecker, board, kings)) 
+      CheckIfPinned(board, pieces, rooks, bishops);
+      
+      if (Legal(board, pieces, kings, pawns, rooks, bishops)) 
       {  
        if (AttackingMove) 
           Capture(pieces);
@@ -33,10 +38,13 @@ class Rook extends Piece {
         StateChecker.FlipColor();
           
         UpdateXYIndices(board);
-                  
-        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
-          
+        
         UpdateOccupiedSquares(board, pieces);
+        UpdateOccupiedSquaresPin(board,pieces);
+        
+        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
+        
+        UpdatePinnedSquares(board);
         
         KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops);
                                      
@@ -59,150 +67,192 @@ class Rook extends Piece {
   }
   
   void UpdateAttackedSquares(SquareCollection board) {
-    Square [][] squares = board.squares;
+         
+    boolean StopUp = false , StopDown = false, StopRight = false, StopLeft = false;
+  
+    /* clear out old lists */
+    ClearAttackedSquares(RookAttackedSquaresWhite, RookAttackedSquaresBlack, true);
+    
+    //Add all squares that rook attacks
+    if (visible) {
+      for (int i = 1; i < 8; i++) { 
+        if (!StopRight) {
+          AttackedSqAlg(board.squares, 1, 0, i);
+        }
+        if (!StopLeft) {
+          AttackedSqAlg(board.squares, -1, 0, i);
+        }
+        if (!StopDown) {
+          AttackedSqAlg(board.squares, 0, 1, i);
+        }
+        if (!StopUp) {
+          AttackedSqAlg(board.squares, 0, -1, i);
+        }          
+      }
+      
+      if (isBlack) {
+        for (Square s : RookAttackedSquaresBlack) {
+          board.AttackedSquaresBlack.add(s);
+        }
+      }
+      else {
+        for (Square s : RookAttackedSquaresWhite) {
+          board.AttackedSquaresWhite.add(s);
+        }
+      } 
+        
+    }    
+  }
+  
+  void AttackedSqAlg(Square [][] squares, int XPlus, int YPlus, int i) {
     int CurrentX = board.GetXIndexMouse(this.x);
     int CurrentY = board.GetYIndexMouse(this.y);
-         
-    if (isBlack) {    // black rook 
-      boolean StopUp = false , StopDown = false, StopRight = false, StopLeft = false;
-
-      /* clear out old lists */
-      ClearAttackedSquares(RookAttackedSquaresWhite, RookAttackedSquaresBlack, true);
-      
-      //Add all squares that rook attacks
-      if (visible) {
-        for (int i = 1; i < 8; i++) { 
-          if (!StopRight) {
-            try {
-              if (squares[CurrentX + i][CurrentY].OccupiedWhite || squares[CurrentX + i][CurrentY].OccupiedBlack) {
-                RookAttackedSquaresWhite.add(squares[CurrentX + i][CurrentY]);
-                squares[CurrentX + i][CurrentY].AttackedByBlack = true;
-                StopRight = true;
-              }
-              else {
-                RookAttackedSquaresWhite.add(squares[CurrentX + i][CurrentY]);
-                squares[CurrentX + i][CurrentY].AttackedByBlack = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopRight = true;}
-          }
-          if (!StopLeft) {
-            try {
-              if (squares[CurrentX - i][CurrentY].OccupiedWhite || squares[CurrentX - i][CurrentY].OccupiedBlack) {
-                RookAttackedSquaresWhite.add(squares[CurrentX - i][CurrentY]);
-                squares[CurrentX - i][CurrentY].AttackedByBlack = true;
-                StopLeft = true;
-              }
-              else {
-                RookAttackedSquaresWhite.add(squares[CurrentX - i][CurrentY]);
-                squares[CurrentX - i][CurrentY].AttackedByBlack = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopLeft = true;}
-          }
-          if (!StopDown) {
-            try {
-              if (squares[CurrentX][CurrentY + i].OccupiedWhite || squares[CurrentX][CurrentY + i].OccupiedBlack) {
-                RookAttackedSquaresWhite.add(squares[CurrentX][CurrentY + i]);
-                squares[CurrentX][CurrentY + i].AttackedByBlack = true;
-                StopDown = true;
-              }
-              else {
-                RookAttackedSquaresWhite.add(squares[CurrentX][CurrentY + i]);
-                squares[CurrentX][CurrentY + i].AttackedByBlack = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopDown = true;}
-          }
-          if (!StopUp) {
-            try {
-              if (squares[CurrentX][CurrentY - i].OccupiedWhite || squares[CurrentX][CurrentY - i].OccupiedBlack) {
-                RookAttackedSquaresWhite.add(squares[CurrentX][CurrentY - i]);
-                squares[CurrentX][CurrentY- i].AttackedByBlack = true;
-                StopUp = true;
-              }
-              else {
-                RookAttackedSquaresWhite.add(squares[CurrentX][CurrentY - i]);
-                squares[CurrentX][CurrentY - i].AttackedByBlack = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopUp = true;}
-          }          
+    
+    if (!isBlack) {
+      try {
+        if (squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedWhite || squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedBlack) {
+          RookAttackedSquaresBlack.add(squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)]);
+          squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].AttackedByWhite = true;
+          
+          if (XPlus == 1 & YPlus == 0)
+            StopRight = true;
+          if (XPlus == -1 & YPlus == 0)
+            StopLeft = true;
+          if (XPlus == 0 & YPlus == 1)
+            StopDown = true;
+          if (XPlus == 0 & YPlus == -1)
+            StopUp = true;
         }
-        
-        for (Square s : RookAttackedSquaresWhite) {
-            board.AttackedSquaresWhite.add(s);
+        else {
+          RookAttackedSquaresBlack.add(squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)]);
+          squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].AttackedByWhite = true;
         }
-      }
+      } catch (IndexOutOfBoundsException e) {
+          if (XPlus == 1 & YPlus == 0)
+            StopRight = true;
+          if (XPlus == -1 & YPlus == 0)
+            StopLeft = true;
+          if (XPlus == 0 & YPlus == 1)
+            StopDown = true;
+          if (XPlus == 0 & YPlus == -1)
+            StopUp = true;
+        }
     }
-    else //white rook
-    {  
-      boolean StopUp = false , StopDown = false, StopRight = false, StopLeft = false;
-
-      /* clear out old lists */
-      ClearAttackedSquares(RookAttackedSquaresWhite, RookAttackedSquaresBlack, false);
-      
-      //Add all squares that rook attacks
-      if (visible) {
-        for (int i = 1; i < 8; i++) {  
-          if (!StopRight) {
-            try {
-              if (squares[CurrentX + i][CurrentY].OccupiedWhite || squares[CurrentX + i][CurrentY].OccupiedBlack) {
-                RookAttackedSquaresBlack.add(squares[CurrentX + i][CurrentY]);
-                squares[CurrentX + i][CurrentY].AttackedByWhite = true;
-                StopRight = true;
-              }
-              else {
-                RookAttackedSquaresBlack.add(squares[CurrentX + i][CurrentY]);
-                squares[CurrentX + i][CurrentY].AttackedByWhite = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopRight = true;}
-          }
-          if (!StopLeft) {
-            try {
-              if (squares[CurrentX - i][CurrentY].OccupiedWhite || squares[CurrentX - i][CurrentY].OccupiedBlack) {
-                RookAttackedSquaresBlack.add(squares[CurrentX - i][CurrentY]);
-                squares[CurrentX - i][CurrentY].AttackedByWhite = true;
-                StopLeft = true;
-              }
-              else {
-                RookAttackedSquaresBlack.add(squares[CurrentX - i][CurrentY]);
-                squares[CurrentX - i][CurrentY].AttackedByWhite = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopLeft = true;}
-          }
-          if (!StopDown) {
-            try {
-              if (squares[CurrentX][CurrentY + i].OccupiedWhite || squares[CurrentX][CurrentY + i].OccupiedBlack) {
-                RookAttackedSquaresBlack.add(squares[CurrentX][CurrentY + i]);
-                squares[CurrentX][CurrentY + i].AttackedByWhite = true;
-                StopDown = true;
-              }
-              else {
-                RookAttackedSquaresBlack.add(squares[CurrentX][CurrentY + i]);
-                squares[CurrentX][CurrentY + i].AttackedByWhite = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopDown = true;}
-          }
-          if (!StopUp) {
-            try {
-              if (squares[CurrentX][CurrentY - i].OccupiedWhite || squares[CurrentX][CurrentY - i].OccupiedBlack) {
-                RookAttackedSquaresBlack.add(squares[CurrentX][CurrentY - i]);
-                squares[CurrentX][CurrentY - i].AttackedByWhite = true;
-                StopUp = true;
-              }
-              else {
-                RookAttackedSquaresBlack.add(squares[CurrentX][CurrentY - i]);
-                squares[CurrentX][CurrentY - i].AttackedByWhite = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopUp = true;}
-          }          
+    else {
+      try {
+        if (squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedWhite || squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedBlack) {
+          RookAttackedSquaresWhite.add(squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)]);
+          squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].AttackedByBlack = true;
+          if (XPlus == 1 & YPlus == 0)
+            StopRight = true;
+          if (XPlus == -1 & YPlus == 0)
+            StopLeft = true;
+          if (XPlus == 0 & YPlus == 1)
+            StopDown = true;
+          if (XPlus == 0 & YPlus == -1)
+            StopUp = true;
         }
-        
-          for (Square s : RookAttackedSquaresBlack) {
-            board.AttackedSquaresBlack.add(s);
-          }
-      }
+        else {
+          RookAttackedSquaresWhite.add(squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)]);
+          squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].AttackedByBlack = true;
+        }
+      } catch (IndexOutOfBoundsException e) {
+          if (XPlus == 1 & YPlus == 0)
+            StopRight = true;
+          if (XPlus == -1 & YPlus == 0)
+            StopLeft = true;
+          if (XPlus == 0 & YPlus == 1)
+            StopDown = true;
+          if (XPlus == 0 & YPlus == -1)
+            StopUp = true;
+        }
     }
+  }
+  
+  void UpdatePinnedSquares(SquareCollection board) {    
+    
+    StopUpPin = false; StopDownPin = false; StopRightPin = false; StopLeftPin = false;
+    
+    if (visible) {
+        for (int i = 1; i < 8; i++) {
+          if (!StopRightPin)
+            PinnedSqAlg(board, i, 1, 0);
+          if (!StopLeftPin)
+            PinnedSqAlg(board, i, -1, 0);
+          if (!StopDownPin)
+            PinnedSqAlg(board, i, 0, 1);
+          if (!StopUpPin)
+            PinnedSqAlg(board, i, 0, -1);
+        }
+          
+     }               
     
   }
   
+   void PinnedSqAlg(SquareCollection board, int i, int XPlus, int YPlus) {
+    
+    // Method that runs before a piece's move is declared legal
+    // Loops through all squares it attacks:
+      // if it sees a king, a piece in pinned
+    int CurrentX = board.GetXIndexMouse(this.x);
+    int CurrentY = board.GetYIndexMouse(this.y);
+    
+    if (isBlack) {
+      try {
+        if (board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedWhitePin || 
+            board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedBlackPin) { 
+          
+          if (XPlus == 1 & YPlus == 0)
+            StopRightPin = true;
+          if (XPlus == -1 & YPlus == 0)
+            StopLeftPin = true;
+          if (XPlus == 0 & YPlus == 1)
+            StopDownPin = true;
+          if (XPlus == 0 & YPlus == -1)
+            StopUpPin = true;
+            
+          return;
+        }
+        
+        if (board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedWhiteKing) {
+          board.PinnedWhitePiece = true;
+          println("pinned pc");
+          return;
+        }
+        
+                                                          
+      }
+      catch (IndexOutOfBoundsException e) {return;}
+    }
+    else {
+      try { 
+        if ((board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedWhitePin || 
+            board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedBlackPin)) {
+
+          if (XPlus == 1 & YPlus == 0)
+            StopRightPin = true;
+          if (XPlus == -1 & YPlus == 0)
+            StopLeftPin = true;
+          if (XPlus == 0 & YPlus == 1)
+            StopDownPin = true;
+          if (XPlus == 0 & YPlus == -1)
+            StopUpPin = true;
+            
+          return;
+        }
+        
+        else if (board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedBlackKing) {
+          board.PinnedBlackPiece = true;
+          println("pinned pc"  );
+          return;
+        }
+                                                          
+      }
+      catch (IndexOutOfBoundsException e) {return;}
+    }
+    
+  }
+    
   void KingPutInCheck(King [] kings, SquareCollection board) { 
    //kings[0] == white king, kings[1] == black king
     if (isBlack) {
@@ -298,7 +348,8 @@ class Rook extends Piece {
     if (CheckForCheckmate(board, rooks, kings, bishops))
       println("mate");
   }
-    
+  
+
   boolean CheckBasicLegalMoves(SquareCollection board) {
     for (int row = 0; row < board.squares.length; row++) {
       for (int col = 0; col < board.squares[row].length; col++) {
@@ -410,8 +461,7 @@ class Rook extends Piece {
               }              
             }
             return true; // if there is nothing in the way then return true;
-          }
-          
+          }          
         }
       }
     }
@@ -454,8 +504,9 @@ class Rook extends Piece {
     return false;
   }
    
-   boolean Legal(StateChecker StateChecker, SquareCollection board, King [] kings) { 
-    if (CheckBasicLegalMoves(board) && CheckTurnColor(StateChecker)) {
+   boolean Legal(SquareCollection board, ArrayList<Piece> Pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) { 
+
+    if (CheckBasicLegalMoves(board) && CheckTurnColor(StateChecker) && !board.PinnedPieceMoved(isBlack)) {
       if (YourKingInCheck(kings)) { 
         if (AttackingTheAttacker(kings) || BlockingMove(kings))
           return true;       

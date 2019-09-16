@@ -48,10 +48,12 @@ void UpdatePieces() {
   
   for (Piece pi : pieces) {
     pi.UpdateOccupiedSquares(board, pieces);
+    pi.UpdateOccupiedSquaresPin(board,pieces);
   }
-    
+  
   for (King k : kings.kings) {
     k.UpdateAttackedSquares(board);
+    k.SquareOccupiedKing(board);
   }
   for (Pawn p : pawns.pawns) {
     p.UpdateAttackedSquares(board);
@@ -104,12 +106,8 @@ void mouseReleased()
 {
   pawns.mouseReleased(board, StateChecker, pieces, pawns.pawns, kings.kings, rooks.rooks, bishops.bishops);
   kings.mouseReleased(board, pieces, kings.kings, pawns.pawns, rooks.rooks, bishops.bishops);
-  rooks.mouseReleased(board, rooks.rooks, kings.kings, pawns.pawns, bishops.bishops);
-  bishops.mouseReleased(board, rooks.rooks, kings.kings, pawns.pawns, bishops.bishops);
+  rooks.mouseReleased(board, pieces, kings.kings, pawns.pawns, rooks.rooks, bishops.bishops);
+  bishops.mouseReleased(board, pieces, rooks.rooks, kings.kings, pawns.pawns, bishops.bishops);
   
-  if (StateChecker.WhiteTurn == true)
-    println("White Turn");
-  if (StateChecker.WhiteTurn == false)
-    println("Black Turn");
   redraw(); 
 }

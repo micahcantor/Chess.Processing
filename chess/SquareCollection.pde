@@ -11,6 +11,9 @@ class SquareCollection
   int ColorCounter = 1;
   boolean BlackSquareTurn = true;
   
+  boolean PinnedBlackPiece, PinnedWhitePiece;
+  boolean WhiteTurn = true;
+  
   public SquareCollection() { }
   
   void createSquares()
@@ -75,6 +78,14 @@ class SquareCollection
      }
    }
    return 0;
+  }
+  
+  boolean PinnedPieceMoved(boolean isBlack) {
+    if (isBlack & PinnedBlackPiece) 
+      return true;
+    if (!isBlack & PinnedWhitePiece)
+      return true;
+    else return false;
   }
   
   // Fall through to activating Square methods:

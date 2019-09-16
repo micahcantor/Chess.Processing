@@ -7,6 +7,9 @@ class Square
   PShape SquareShape;
   int squarenumber;
   boolean OccupiedWhite, OccupiedBlack;
+  boolean OccupiedWhitePin, OccupiedBlackPin;
+  boolean OccupiedWhiteKing, OccupiedBlackKing;
+  boolean pinnedSquare;
   boolean AttackedByWhite, AttackedByBlack;
   
    public Square(float _x, float _y, boolean _isBlack, int _squarenumber) {

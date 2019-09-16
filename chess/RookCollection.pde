@@ -40,9 +40,9 @@ class RookCollection
          r.mouseDragged(mousex,mousey); 
        }
      }
-  void mouseReleased(SquareCollection board, Rook [] rooks, King [] kings, Pawn [] pawns, Bishop [] bishops) { 
+  void mouseReleased(SquareCollection board, ArrayList<Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) { 
       for (Rook r : rooks) {
-        r.mouseReleased(board, rooks, kings, pawns, bishops);
+        r.mouseReleased(board, pieces, kings, pawns, rooks, bishops);
       }
     }
 }

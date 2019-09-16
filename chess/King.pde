@@ -41,16 +41,19 @@ class King extends Piece
         AttackingMove = false;
         
         StateChecker.FlipColor();
+         board.WhiteTurn = !board.WhiteTurn;
           
         UpdateXYIndices(board);
           
-    //    UpdateAttackedSquares(board);
+        UpdateAttackedSquares(board);
         
-        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
-          
         UpdateOccupiedSquares(board, pieces);
         
+        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
+        
         KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops);
+        
+        SquareOccupiedKing(board);
 
        if (CheckForCheckmate(board, rooks, kings, bishops))
           println("mate");
@@ -80,6 +83,19 @@ class King extends Piece
       this.InCheck = false;
       AttackedByThesePieces.clear();
     }
+  }
+  
+  void SquareOccupiedKing(SquareCollection board) { 
+    for (Square [] row : board.squares) {
+          for (Square s : row) {
+            if (s.x == x && s.y == y) {
+              if (isBlack)
+                s.OccupiedBlackKing = true;
+              else
+                s.OccupiedWhiteKing = true;
+            }
+          }
+        }
   }
   
   boolean Checkmate(SquareCollection board, Rook [] rooks, Bishop [] bishops)
@@ -345,7 +361,6 @@ class King extends Piece
       }
     } 
     
-   //AttackedSquaresLogging(board);
 
   }
   

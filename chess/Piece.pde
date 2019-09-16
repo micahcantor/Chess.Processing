@@ -5,7 +5,7 @@ class Piece {
   boolean FirstMove = true;
   boolean visible = true;
   boolean BlackIsCaptured;
-  boolean AttackingMove;
+  boolean AttackingMove;  
   
   float x, y, l;
   int XInd, YInd;
@@ -17,6 +17,8 @@ class Piece {
   int InitSquareX, InitSquareY, FinalSquareX, FinalSquareY, InitXCoord, InitYCoord, FinalXCoord, FinalYCoord;
   int XChange, YChange;
   int CapturedOnX, CapturedOnY;
+  
+  int InitSquareNum, PostSquareNum;
 
   
   public Piece () {}
@@ -85,16 +87,48 @@ class Piece {
    }
    
    for (Square [] row : board.squares) {
-     for (Square s : row) { // for each square
-       for (Piece pi : pieces) { // Loop over each piece
-         if (s.x == pi.x && s.y == pi.y) { // if coords are the same
-           if (pi.isBlack && pi.visible) { // check color and visibility and occupy square 
-             s.OccupiedBlack = true;
-             board.OccupiedBlack.add(s.squarenumber);
+     for (Square s : row) {                 // for each square
+       for (Piece pi : pieces) {            // Loop over each piece
+         if (s.x == pi.x && s.y == pi.y) {  // if coords are the same
+           if (pi.isBlack && pi.visible) {              
+               s.OccupiedBlack = true;
+               board.OccupiedBlack.add(s.squarenumber);
            }
-           else if (!pi.isBlack && pi.visible) {
-             s.OccupiedWhite = true;
-             board.OccupiedWhite.add(s.squarenumber);
+           else if (!pi.isBlack && pi.visible) {    // cant be a king          
+               s.OccupiedWhite = true;
+               board.OccupiedWhite.add(s.squarenumber);
+             
+           }
+         }
+       }
+     }
+   }    
+  }
+  
+  void UpdateOccupiedSquaresPin(SquareCollection board, ArrayList<Piece> pieces)
+  {
+   //turn off all occupied squares
+   //board.OccupiedBlack.clear();
+   //board.OccupiedWhite.clear();
+   for (Square [] row : board.squares) {
+     for (Square s : row) {
+       s.OccupiedBlackPin = false;
+       s.OccupiedWhitePin = false;
+     }
+   }
+   
+   for (Square [] row : board.squares) {
+     for (Square s : row) {                 // for each square
+       for (Piece pi : pieces) {            // Loop over each piece
+         if (s.x == pi.x && s.y == pi.y) {  // if coords are the same
+           if (pi.isBlack && pi.visible && !pi.getClass().getSimpleName().equals("King")) {  // check color and visibility and occupy square            
+               s.OccupiedBlackPin = true;
+               //board.OccupiedBlack.add(s.squarenumber);
+           }
+           else if (!pi.isBlack && pi.visible && !pi.getClass().getSimpleName().equals("King")) {             
+               s.OccupiedWhitePin = true;
+              // board.OccupiedWhite.add(s.squarenumber);
+             
            }
          }
        }
@@ -200,6 +234,21 @@ class Piece {
     else return false;    
   }
   
+  void CheckIfPinned(SquareCollection board, ArrayList <Piece> pieces, Rook [] rooks, Bishop [] bishops) {
+    board.PinnedBlackPiece = false;
+    board.PinnedWhitePiece = false;
+      
+    UpdateXYIndices(board);        
+    UpdateOccupiedSquaresPin(board, pieces);
+    
+    for (Rook r : rooks) {
+      r.UpdatePinnedSquares(board);
+    }
+    for (Bishop b : bishops) {
+      b.UpdatePinnedSquares(board);
+    }
+  }
+  
   void AttackedSquaresLogging(SquareCollection board)
   {
     ArrayList<Integer> numbers = new ArrayList <Integer>();
@@ -219,8 +268,8 @@ class Piece {
     Set<Integer> NumbersNoDupes = new LinkedHashSet<Integer>(numbers);
     Set<Integer> Numbers2NoDupes = new LinkedHashSet<Integer>(numbers2);
     
-    System.out.println("black : " + NumbersNoDupes);
-    System.out.println("white : " + Numbers2NoDupes); 
+    //System.out.println("Attacked for black : " + NumbersNoDupes);
+    System.out.println("Attacked for white : " + Numbers2NoDupes); 
   }
   
   boolean RightCaptureColor (boolean PieceIsBlack) {

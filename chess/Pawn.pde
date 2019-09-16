@@ -21,13 +21,15 @@ class Pawn extends Piece //<>//
 
   void mouseReleased(SquareCollection SquareCollection, StateChecker StateChecker, ArrayList<Piece> pieces, Pawn [] pawns, King [] kings, Rook [] rooks, Bishop [] bishops)
   {
-    if (active && visible) {      
+    if (active && visible) {
       GetXYChange(SquareCollection, mouseX, mouseY);    // gets x and y change in indices, stored in XChange/YChange
       LockPieceToSquare(board.squares);                 // locks piece to the middle of the square it move to
       active = false;                                   // turn off mouse activity for this piece
-
+     
+      CheckIfPinned(board, pieces, rooks, bishops);
+      
     // if legal move :
-      if (Legal(StateChecker, board.squares, kings)) {  
+      if (Legal(board, pieces, kings, pawns, rooks, bishops)) {  
        if (AttackingMove) 
           Capture(pieces);
           
@@ -36,11 +38,13 @@ class Pawn extends Piece //<>//
         StateChecker.FlipColor();
           
         UpdateXYIndices(board);
-                  
-        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
-          
+         
         UpdateOccupiedSquares(board, pieces);
-                
+        UpdateOccupiedSquaresPin(board,pieces);
+
+        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
+        
+        
         KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops);
                               
        if (CheckForCheckmate(board, rooks, kings, bishops))
@@ -187,9 +191,10 @@ class Pawn extends Piece //<>//
     return false;
   }
 
-  boolean Legal(StateChecker StateChecker, Square [][] Squares, King [] kings)
+  boolean Legal(SquareCollection board, ArrayList<Piece> Pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops)
   { 
-     if (CheckBasicLegalMoves(Squares) && CheckTurnColor(StateChecker)) {
+    
+    if (CheckBasicLegalMoves(board.squares) && CheckTurnColor(StateChecker) && !board.PinnedPieceMoved(isBlack)) {
       if (YourKingInCheck(kings)) { 
         println("here" + AttackingTheAttacker(kings) , BlockingMove(kings));
         if (AttackingTheAttacker(kings) || BlockingMove(kings))
@@ -199,7 +204,7 @@ class Pawn extends Piece //<>//
       
       return true; // return true if king is not in check
     } else {
-      println(CheckBasicLegalMoves(Squares) + " , " + CheckTurnColor(StateChecker));
+      println(CheckBasicLegalMoves(board.squares) + " , " + CheckTurnColor(StateChecker));
       return false;
     }    
   }
