@@ -108,14 +108,15 @@ class Piece {
   void UpdateOccupiedSquaresPin(SquareCollection board, ArrayList<Piece> pieces)
   {
    //turn off all occupied squares
-   //board.OccupiedBlack.clear();
-   //board.OccupiedWhite.clear();
+
    for (Square [] row : board.squares) {
      for (Square s : row) {
        s.OccupiedBlackPin = false;
        s.OccupiedWhitePin = false;
      }
    }
+   board.OccupiedBlackPin.clear();
+   board.OccupiedWhitePin.clear();
    
    for (Square [] row : board.squares) {
      for (Square s : row) {                 // for each square
@@ -123,11 +124,11 @@ class Piece {
          if (s.x == pi.x && s.y == pi.y) {  // if coords are the same
            if (pi.isBlack && pi.visible && !pi.getClass().getSimpleName().equals("King")) {  // check color and visibility and occupy square            
                s.OccupiedBlackPin = true;
-               //board.OccupiedBlack.add(s.squarenumber);
+               board.OccupiedBlackPin.add(s.squarenumber);
            }
            else if (!pi.isBlack && pi.visible && !pi.getClass().getSimpleName().equals("King")) {             
                s.OccupiedWhitePin = true;
-              // board.OccupiedWhite.add(s.squarenumber);
+               board.OccupiedWhitePin.add(s.squarenumber);
              
            }
          }

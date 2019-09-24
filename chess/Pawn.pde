@@ -25,12 +25,12 @@ class Pawn extends Piece //<>//
       GetXYChange(SquareCollection, mouseX, mouseY);    // gets x and y change in indices, stored in XChange/YChange
       LockPieceToSquare(board.squares);                 // locks piece to the middle of the square it move to
       active = false;                                   // turn off mouse activity for this piece
-     
+      
       CheckIfPinned(board, pieces, rooks, bishops);
       
     // if legal move :
       if (Legal(board, pieces, kings, pawns, rooks, bishops)) {  
-       if (AttackingMove) 
+        if (AttackingMove) 
           Capture(pieces);
           
         AttackingMove = false;
@@ -43,8 +43,7 @@ class Pawn extends Piece //<>//
         UpdateOccupiedSquaresPin(board,pieces);
 
         UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
-        
-        
+                
         KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops);
                               
        if (CheckForCheckmate(board, rooks, kings, bishops))
@@ -192,8 +191,7 @@ class Pawn extends Piece //<>//
   }
 
   boolean Legal(SquareCollection board, ArrayList<Piece> Pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops)
-  { 
-    
+  {     
     if (CheckBasicLegalMoves(board.squares) && CheckTurnColor(StateChecker) && !board.PinnedPieceMoved(isBlack)) {
       if (YourKingInCheck(kings)) { 
         println("here" + AttackingTheAttacker(kings) , BlockingMove(kings));

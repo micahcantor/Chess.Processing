@@ -2,6 +2,7 @@ class Bishop extends Piece {
   PImage BishopImage;
   ArrayList <Square> BishopAttackedSquaresWhite = new ArrayList();
   ArrayList <Square> BishopAttackedSquaresBlack = new ArrayList();
+  boolean StopDownRight = false, StopDownLeft = false, StopUpRight = false, StopUpLeft = false;
   boolean StopUpRightPin = false, StopDownRightPin = false, StopDownLeftPin = false, StopUpLeftPin = false;
   
   public Bishop(PImage _BishopImage, boolean _isBlack, float _x, float _y) {
@@ -21,10 +22,10 @@ class Bishop extends Piece {
     if (active && visible) {      
       GetXYChange(board, mouseX, mouseY);
       LockPieceToSquare(board.squares);
-      active = false; 
+      active = false;
       
       CheckIfPinned(board, pieces, rooks, bishops);
-
+      
       if (Legal(board, pieces, kings, pawns, rooks, bishops)) 
       { 
         if (AttackingMove) 
@@ -37,8 +38,11 @@ class Bishop extends Piece {
         UpdateXYIndices(board);
         
         UpdateOccupiedSquares(board, pieces);
+        UpdateOccupiedSquaresPin(board,pieces);
         
         UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
+        
+        UpdatePinnedSquares(board);
           
         KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops); 
         
@@ -49,157 +53,84 @@ class Bishop extends Piece {
     }
   }
   
-  /// TODO copy in ValidMove method from rooks
   void UpdateAttackedSquares(SquareCollection board) {
-    Square [][] squares = board.squares;
+  
+    /* clear out old lists */
+    ClearAttackedSquares(BishopAttackedSquaresWhite, BishopAttackedSquaresBlack, true);
+    
+    //Add all squares that rook attacks
+    if (visible) {
+      for (int i = 1; i < 8; i++) {
+        if (!StopUpRight) 
+          AttackedSqAlg(board.squares, 1, -1, i);
+        else if (!StopDownRight) 
+          AttackedSqAlg(board.squares, 1, 1, i);
+        else if (!StopDownLeft) 
+          AttackedSqAlg(board.squares, -1, 1, i);
+        else if (!StopUpLeft) 
+          AttackedSqAlg(board.squares, -1 , -1, i);        
+      }
+      
+      if (isBlack) {
+        for (Square s : BishopAttackedSquaresBlack) {
+          board.AttackedSquaresBlack.add(s);
+        }
+      }
+      else {
+        for (Square s : BishopAttackedSquaresWhite) {
+          board.AttackedSquaresWhite.add(s);
+        }
+      } 
+        
+    }
+  }
+  
+  void AttackedSqAlg(Square [][] squares, int XPlus, int YPlus, int i) {
     int CurrentX = board.GetXIndexMouse(this.x);
     int CurrentY = board.GetYIndexMouse(this.y);
-         
-    if (isBlack) {    // black bishop 
-      boolean StopUpRight = false , StopUpLeft = false, StopDownRight = false, StopDownLeft = false;
-
-      /* clear out old lists */
-      ClearAttackedSquares(BishopAttackedSquaresWhite, BishopAttackedSquaresBlack, true);
-      
-      //Add all squares that bishop attacks
-      if (visible) {
-        for (int i = 1; i < 8; i++) { 
-          
-          if (!StopUpRight) {
-            try {
-              if (squares[CurrentX + i][CurrentY - i].OccupiedWhite || squares[CurrentX + i][CurrentY - i].OccupiedBlack) {
-                BishopAttackedSquaresWhite.add(squares[CurrentX + i][CurrentY - i]);
-                squares[CurrentX + i][CurrentY - i].AttackedByBlack = true;
-                StopUpRight = true;
-              }
-              else {
-                BishopAttackedSquaresWhite.add(squares[CurrentX + i][CurrentY - i]);
-                squares[CurrentX + i][CurrentY - i].AttackedByBlack = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopUpRight = true;}
-          }
-          
-          if (!StopUpLeft) {
-            try {
-              if (squares[CurrentX - i][CurrentY - i].OccupiedWhite || squares[CurrentX - i][CurrentY - i].OccupiedBlack) {
-                BishopAttackedSquaresWhite.add(squares[CurrentX - i][CurrentY - i]);
-                squares[CurrentX - i][CurrentY - i].AttackedByBlack = true;
-                StopUpLeft = true;
-              }
-              else {
-                BishopAttackedSquaresWhite.add(squares[CurrentX - i][CurrentY - i]);
-                squares[CurrentX - i][CurrentY - i].AttackedByBlack = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopUpLeft = true;}
-          }
-          
-          if (!StopDownRight) {
-            try {
-              if (squares[CurrentX + i][CurrentY + i].OccupiedWhite || squares[CurrentX + i][CurrentY + i].OccupiedBlack) {
-                BishopAttackedSquaresWhite.add(squares[CurrentX + i][CurrentY + i]);
-                squares[CurrentX + i][CurrentY + i].AttackedByBlack = true;
-                StopDownRight = true;
-              }
-              else {
-                BishopAttackedSquaresWhite.add(squares[CurrentX + i][CurrentY + i]);
-                squares[CurrentX + i][CurrentY + i].AttackedByBlack = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopDownRight = true;}
-          }
-          if (!StopDownLeft) {
-            try {
-              if (squares[CurrentX - i][CurrentY + i].OccupiedWhite || squares[CurrentX - i][CurrentY + i].OccupiedBlack) {
-                BishopAttackedSquaresWhite.add(squares[CurrentX - i][CurrentY + i]);
-                squares[CurrentX - i][CurrentY + i].AttackedByBlack = true;
-                StopDownLeft = true;
-              }
-              else {
-                BishopAttackedSquaresWhite.add(squares[CurrentX - i][CurrentY + i]);
-                squares[CurrentX - 1][CurrentY + 1].AttackedByBlack = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopDownLeft = true;}
-          }          
-        }
-        
-        for (Square s : BishopAttackedSquaresWhite) {
-            board.AttackedSquaresWhite.add(s);
-        }
-      }
-    }
     
-    else //white bishop
-    {  
-      boolean StopUpRight = false , StopUpLeft = false, StopDownRight = false, StopDownLeft = false;
-
-      /* clear out old lists */
-      ClearAttackedSquares(BishopAttackedSquaresWhite, BishopAttackedSquaresBlack, false);
-      
-      //Add all squares that bishop attacks
-      if (visible) {
-        for (int i = 1; i < 8; i++) { 
+    if (!isBlack) {
+      try {
+        if (squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedWhite || squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedBlack) {
+          BishopAttackedSquaresBlack.add(squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)]);
+          squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].AttackedByWhite = true;
           
-          if (!StopUpRight) {
-            try {
-              if (squares[CurrentX + i][CurrentY - i].OccupiedWhite || squares[CurrentX + i][CurrentY - i].OccupiedBlack) {
-                BishopAttackedSquaresBlack.add(squares[CurrentX + i][CurrentY - i]);
-                squares[CurrentX + i][CurrentY - i].AttackedByWhite = true;
-                StopUpRight = true;
-              }
-              else {
-                BishopAttackedSquaresBlack.add(squares[CurrentX + i][CurrentY - i]);
-                squares[CurrentX + i][CurrentY - i].AttackedByWhite = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopUpRight = true;}
-          }
-          
-          if (!StopUpLeft) {
-            try {
-              if (squares[CurrentX - i][CurrentY - i].OccupiedWhite || squares[CurrentX - i][CurrentY - i].OccupiedBlack) {
-                BishopAttackedSquaresBlack.add(squares[CurrentX - i][CurrentY - i]);
-                squares[CurrentX - i][CurrentY - i].AttackedByWhite = true;
-                StopUpLeft = true;
-              }
-              else {
-                BishopAttackedSquaresBlack.add(squares[CurrentX - i][CurrentY - i]);
-                squares[CurrentX - i][CurrentY - i].AttackedByWhite = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopUpLeft = true;}
-          }
-          
-          if (!StopDownRight) {
-            try {
-              if (squares[CurrentX + i][CurrentY + i].OccupiedWhite || squares[CurrentX + i][CurrentY + i].OccupiedBlack) {
-                BishopAttackedSquaresBlack.add(squares[CurrentX + i][CurrentY + i]);
-                squares[CurrentX + i][CurrentY + i].AttackedByWhite = true;
-                StopDownRight = true;
-              }
-              else {
-                BishopAttackedSquaresBlack.add(squares[CurrentX + i][CurrentY + i]);
-                squares[CurrentX + i][CurrentY + i].AttackedByWhite = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopDownRight = true;}
-          }
-          
-          if (!StopDownLeft) {
-            try {
-              if (squares[CurrentX - i][CurrentY + i].OccupiedWhite || squares[CurrentX - i][CurrentY + i].OccupiedBlack) {
-                BishopAttackedSquaresBlack.add(squares[CurrentX - i][CurrentY + i]);
-                squares[CurrentX - i][CurrentY + i].AttackedByWhite = true;
-                StopDownLeft = true;
-              }
-              else {
-                BishopAttackedSquaresBlack.add(squares[CurrentX - i][CurrentY + i]);
-                squares[CurrentX - i][CurrentY + i].AttackedByWhite = true;
-              }
-            } catch (IndexOutOfBoundsException e) {StopDownLeft = true;}
-          }          
+          AssignStopDirection(XPlus, YPlus);
         }
-        
-        for (Square s : BishopAttackedSquaresBlack) {
-            board.AttackedSquaresBlack.add(s);
+        else {
+          BishopAttackedSquaresBlack.add(squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)]);
+          squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].AttackedByWhite = true;
         }
-      }
+      } catch (IndexOutOfBoundsException e) {
+          AssignStopDirection(XPlus, YPlus);
+        }
     }
+    else {
+      try {
+        if (squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedWhite || squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedBlack) {
+          BishopAttackedSquaresWhite.add(squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)]);
+          squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].AttackedByBlack = true;
+          AssignStopDirection(XPlus, YPlus);
+        }
+        else {
+          BishopAttackedSquaresWhite.add(squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)]);
+          squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].AttackedByBlack = true;
+        }
+      } catch (IndexOutOfBoundsException e) {
+          AssignStopDirection(XPlus, YPlus);
+        }
+    }
+  }
+  
+  void AssignStopDirection (int XPlus, int YPlus) {
+    if (XPlus == 1 & YPlus == 1)
+      StopDownRight = true;
+    else if (XPlus == -1 & YPlus == 1)
+      StopDownLeft = true;
+    else if (XPlus == 1 & YPlus == -1)
+      StopUpRight = true;
+    else if (XPlus == -1 & YPlus == -1)
+      StopUpLeft = true;
   }
   
   void UpdatePinnedSquares(SquareCollection board) {    
@@ -208,16 +139,15 @@ class Bishop extends Piece {
     
     if (visible) {
         for (int i = 1; i < 8; i++) {
-          if (!StopUpRightPin)
-            PinnedSqAlg(board, i, 1, 1);
-          if (!StopUpLeftPin)
-            PinnedSqAlg(board, i, -1, 1);
           if (!StopDownRightPin)
-            PinnedSqAlg(board, i, 1, -1);
+            PinnedSqAlg(board, i, 1, 1);
           if (!StopDownLeftPin)
+            PinnedSqAlg(board, i, -1, 1);
+          if (!StopUpRightPin)
+            PinnedSqAlg(board, i, 1, -1);
+          if (!StopUpLeftPin) 
             PinnedSqAlg(board, i, -1, -1);
-        }
-          
+        }          
      }               
     
   }
@@ -234,15 +164,15 @@ class Bishop extends Piece {
     if (isBlack) {
       try {
         if (board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedWhitePin || 
-            board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedBlackPin) {  //occupied by a pieces
+            board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedBlackPin) {  //occupied by a piece
           
           if (XPlus == 1 & YPlus == 1)
-            StopUpRightPin = true;
-          if (XPlus == -1 & YPlus == 1)
-            StopUpLeftPin = true;
-          if (XPlus == 1 & YPlus == -1)
             StopDownRightPin = true;
-          if (XPlus == -1 & YPlus == -1)
+          else if (XPlus == -1 & YPlus == 1)
+            StopDownLeftPin = true;
+          else if (XPlus == 1 & YPlus == -1)
+            StopUpRightPin = true;
+          else if (XPlus == -1 & YPlus == -1)
             StopUpLeftPin = true;
             
           return;
@@ -250,11 +180,10 @@ class Bishop extends Piece {
         
         if (board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedWhiteKing) {
           board.PinnedWhitePiece = true;
-          println("pinned pc");
+          //println("pinned pc");
           return;
         }
-        
-                                                          
+                                                                  
       }
       catch (IndexOutOfBoundsException e) {return;}
     }
@@ -264,12 +193,12 @@ class Bishop extends Piece {
             board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedBlackPin)) {
 
          if (XPlus == 1 & YPlus == 1)
-            StopUpRightPin = true;
-          if (XPlus == -1 & YPlus == 1)
-            StopUpLeftPin = true;
-          if (XPlus == 1 & YPlus == -1)
             StopDownRightPin = true;
-          if (XPlus == -1 & YPlus == -1)
+          else if (XPlus == -1 & YPlus == 1)
+            StopDownLeftPin = true;
+          else if (XPlus == 1 & YPlus == -1)
+            StopUpRightPin = true;
+          else if (XPlus == -1 & YPlus == -1)
             StopUpLeftPin = true;
             
           return;
@@ -277,7 +206,7 @@ class Bishop extends Piece {
         
         else if (board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedBlackKing) {
           board.PinnedBlackPiece = true;
-          println("pinned pc"  );
+          //println("pinned pc"  );
           return;
         }
                                                           
@@ -396,111 +325,19 @@ class Bishop extends Piece {
         if (board.squares[row][col].active) { // this is the square the mouse is released on
         
           if ((XChange > 0 && YChange < 0)) { // If bishop is moving up right
-            for (int i = 0; i < abs(YChange); i++) { // for each square that it moved
-              // check if that square was occupied
-              if (board.squares[row - i][col + i].OccupiedBlack && isBlack) //occupied black and black piece
-                return false;
-              if (board.squares[row - i][col + i].OccupiedWhite && !isBlack) //occupied white and white piece
-                return false;
-              if (board.squares[row - i][col + i].OccupiedWhite && isBlack) { // capture of white
-                AttackingMove = true;
-                CapturedOnX = (int) board.squares[row - i][col + i].x;
-                CapturedOnY = (int) board.squares[row - i][col + i].y;
-                BlackIsCaptured = false;
-                UpdateAttackedSquares(board);
-                return true;
-              }
-              if (board.squares[row - i][col + i].OccupiedBlack && !isBlack) { // capture of black
-                AttackingMove = true;
-                CapturedOnX = (int) board.squares[row - i][col + i].x;
-                CapturedOnY = (int) board.squares[row - i][col + i].y;
-                BlackIsCaptured = true;
-                UpdateAttackedSquares(board);
-                return true;
-              }              
-            }
-            return true; // if there is nothing in the way then return true;
+            return BasicLegalMovesAlg(row, col, -1, 1, YChange);
           }
           
           if ((XChange < 0 && YChange < 0)) { // If rook is moving up left
-            for (int i = 0; i < abs(YChange); i++) { // for each square that it moved
-              // check if that square was occupied
-              if (board.squares[row + i][col + i].OccupiedBlack && isBlack) //occupied black and black piece
-                return false;
-              if (board.squares[row + i][col + i].OccupiedWhite && !isBlack) //occupied white and white piece
-                return false;
-              if (board.squares[row + i][col + i].OccupiedWhite && isBlack) { // capture of white
-                AttackingMove = true;
-                CapturedOnX = (int) board.squares[row + i][col + i].x;
-                CapturedOnY = (int) board.squares[row + i][col + i].y;
-                BlackIsCaptured = false;
-                UpdateAttackedSquares(board);
-                return true;
-              }
-              if (board.squares[row + i][col + i].OccupiedBlack && !isBlack) { // capture of black
-                AttackingMove = true;
-                CapturedOnX = (int) board.squares[row + i][col + i].x;
-                CapturedOnY = (int) board.squares[row + i][col + i].y;
-                BlackIsCaptured = true;
-                UpdateAttackedSquares(board);
-                return true;
-              }              
-            }
-            return true; // if there is nothing in the way then return true;
+            return BasicLegalMovesAlg(row, col, 1, 1, YChange);
           }
           
          if ((XChange > 0 && YChange > 0)) { // If rook is moving down right
-            for (int i = 0; i < XChange; i++) { // for each square that it moved
-              // check if that square was occupied
-              if (board.squares[row - i][col - i].OccupiedBlack && isBlack) //occupied black and black piece
-                return false;
-              if (board.squares[row - i][col - i].OccupiedWhite && !isBlack) //occupied white and white piece
-                return false;
-              if (board.squares[row - i][col - i].OccupiedWhite && isBlack) { // capture of white
-                AttackingMove = true;
-                CapturedOnX = (int) board.squares[row - i][col - i].x;
-                CapturedOnY = (int) board.squares[row - i][col - i].y;
-                BlackIsCaptured = false;
-                UpdateAttackedSquares(board);
-                return true;
-              }
-              if (board.squares[row - i][col - i].OccupiedBlack && !isBlack) { // capture of black
-                AttackingMove = true;
-                CapturedOnX = (int) board.squares[row - i][col - i].x;
-                CapturedOnY = (int) board.squares[row - i][col - i].y;
-                BlackIsCaptured = true;
-                UpdateAttackedSquares(board);
-                return true;
-              }              
-            }
-            return true; // if there is nothing in the way then return true;
+            return BasicLegalMovesAlg(row, col, -1, -1, XChange);
           }
           
           if ((XChange < 0 && YChange > 0)) { // If rook is moving down left
-            for (int i = 0; i < abs(XChange); i++) { // for each square that it moved
-              // check if that square was occupied
-              if (board.squares[row + i][col - i].OccupiedBlack && isBlack) //occupied black and black piece
-                return false;
-              if (board.squares[row + i][col - i].OccupiedWhite && !isBlack) //occupied white and white piece
-                return false;
-              if (board.squares[row + i][col - i].OccupiedWhite && isBlack) { // capture of white
-                AttackingMove = true;
-                CapturedOnX = (int) board.squares[row + i][col - i].x;
-                CapturedOnY = (int) board.squares[row + i][col - i].y;
-                BlackIsCaptured = false;
-                UpdateAttackedSquares(board);
-                return true;
-              }
-              if (board.squares[row + i][col - i].OccupiedBlack && !isBlack) { // capture of black
-                AttackingMove = true;
-                CapturedOnX = (int) board.squares[row + i][col - i].x;
-                CapturedOnY = (int) board.squares[row + i][col - i].y;
-                BlackIsCaptured = true;
-                UpdateAttackedSquares(board);
-                return true;
-              }              
-            }
-            return true; // if there is nothing in the way then return true;
+            return BasicLegalMovesAlg(row, col, 1, -1, XChange);            
           }
           
         }
@@ -509,10 +346,35 @@ class Bishop extends Piece {
     return false;
   }
   
+  boolean BasicLegalMovesAlg(int row, int col, int XPlus, int YPlus, int delta) {
+    for (int i = 0; i < abs(delta); i++) { // for each square that it moved
+      // check if that square was occupied
+      if (board.squares[row + (i*XPlus)][col + (i*YPlus)].OccupiedBlack && isBlack) //occupied black and black piece
+        return false;
+      if (board.squares[row + (i*XPlus)][col + (i*YPlus)].OccupiedWhite && !isBlack) //occupied white and white piece
+        return false;
+      if (board.squares[row + (i*XPlus)][col + (i*YPlus)].OccupiedWhite && isBlack) { // capture of white
+        AttackingMove = true;
+        CapturedOnX = (int) board.squares[row + (i*XPlus)][col + (i*YPlus)].x;
+        CapturedOnY = (int) board.squares[row + (i*XPlus)][col + (i*YPlus)].y;
+        BlackIsCaptured = false;
+        UpdateAttackedSquares(board);
+        return true;
+      }
+      if (board.squares[row + (i*XPlus)][col + (i*YPlus)].OccupiedBlack && !isBlack) { // capture of black
+        AttackingMove = true;
+        CapturedOnX = (int) board.squares[row + (i*XPlus)][col + (i*YPlus)].x;
+        CapturedOnY = (int) board.squares[row + (i*XPlus)][col + (i*YPlus)].y;
+        BlackIsCaptured = true;
+        UpdateAttackedSquares(board);
+        return true;
+      }              
+    }
+    return true; // if there is nothing in the way then return true;
+  }
+  
    boolean Legal(SquareCollection board, ArrayList<Piece> Pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) { 
     
-    if (board.PinnedPieceMoved(isBlack))
-      println("pinned");
     if (CheckBasicLegalMoves(board) && CheckTurnColor(StateChecker) && !board.PinnedPieceMoved(isBlack)) {      
       if (YourKingInCheck(kings)) {         
         if (AttackingTheAttacker(kings) || BlockingMove(kings)) {

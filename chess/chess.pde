@@ -5,6 +5,8 @@ PawnCollection pawns;
 KingCollection kings;
 RookCollection rooks;
 BishopCollection bishops;
+QueenCollection queens;
+
 ArrayList <Piece> pieces;
 SquareCollection board;
 StateChecker StateChecker;
@@ -24,10 +26,14 @@ void setup() {
   PImage WhiteBishop = loadImage("icons/WhiteBishop.png");
   PImage BlackBishop = loadImage("icons/BlackBishop.png");
   
+  PImage WhiteQueen = loadImage("icons/WhiteQueen.png");
+  PImage BlackQueen = loadImage("icons/BlackQueen.png");
+  
   pawns   = new PawnCollection(WhitePawn, BlackPawn);
   kings   = new KingCollection(WhiteKing, BlackKing);
   rooks   = new RookCollection(WhiteRook, BlackRook);
   bishops = new BishopCollection(WhiteBishop, BlackBishop);
+  queens  = new QueenCollection(WhiteQueen, BlackQueen);
   pieces  = new ArrayList<Piece>();
   
   board   = new SquareCollection();
@@ -38,6 +44,7 @@ void setup() {
   kings.createKings(pieces);
   rooks.createRooks(pieces);
   bishops.createBishops(pieces);
+  queens.createQueens(pieces);
   
   UpdatePieces();
   
@@ -64,6 +71,9 @@ void UpdatePieces() {
   for (Bishop b : bishops.bishops) {
     b.UpdateAttackedSquares(board);
   }
+  for (Queen q : queens.queens) {
+    q.UpdateAttackedSquares(board);
+  }
 }
 
 void draw() 
@@ -73,6 +83,7 @@ void draw()
   pawns.draw(); 
   kings.draw();
   rooks.draw();
+  queens.draw();
   bishops.draw();
 }
 
@@ -83,6 +94,7 @@ void mouseMoved()
   kings.mouseMoved(mouseX, mouseY);
   rooks.mouseMoved(mouseX, mouseY);
   bishops.mouseMoved(mouseX , mouseY);
+  queens.mouseMoved(mouseX, mouseY);
   redraw();
 }
 void mousePressed() 
@@ -91,6 +103,7 @@ void mousePressed()
   kings.mousePressed(mouseX, mouseY, board);
   rooks.mousePressed(mouseX, mouseY, board);
   bishops.mousePressed(mouseX, mouseY, board);
+  queens.mousePressed(mouseX, mouseY, board);
   redraw();
 }
 void mouseDragged() 
@@ -100,6 +113,7 @@ void mouseDragged()
   rooks.mouseDragged(mouseX, mouseY);
   bishops.mouseDragged(mouseX, mouseY);
   board.mouseDragged(mouseX, mouseY);
+  queens.mouseDragged(mouseX, mouseY);
   redraw(); 
 }
 void mouseReleased() 
