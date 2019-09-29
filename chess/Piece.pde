@@ -74,8 +74,7 @@ class Piece {
       }
   }
  
-  void UpdateOccupiedSquares(SquareCollection board, ArrayList<Piece> pieces)
-  {
+  void UpdateOccupiedSquares(SquareCollection board, ArrayList<Piece> pieces) {
    //turn off all occupied squares
    board.OccupiedBlack.clear();
    board.OccupiedWhite.clear();
@@ -105,8 +104,7 @@ class Piece {
    }    
   }
   
-  void UpdateOccupiedSquaresPin(SquareCollection board, ArrayList<Piece> pieces)
-  {
+  void UpdateOccupiedSquaresPin(SquareCollection board, ArrayList<Piece> pieces) {
    //turn off all occupied squares
 
    for (Square [] row : board.squares) {
@@ -169,7 +167,7 @@ class Piece {
     }
   }
   
-  void UpdateAllPiecesAttackedSquares(SquareCollection board, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) {
+  void UpdateAllPiecesAttackedSquares(SquareCollection board, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights) {
     for (King k : kings) {
       k.UpdateAttackedSquares(board);
     }
@@ -182,10 +180,17 @@ class Piece {
     for (Bishop b : bishops) {
       b.UpdateAttackedSquares(board);
     }
+    for (Queen q : queens) {
+      q.UpdateAttackedSquares(board);
+    }
+    for (Knight kn : knights) {
+      kn.UpdateAttackedSquares(board);
+    }
   }
   
-  void KingPutInCheckAllPieces(SquareCollection board, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) {
-    kings[0].InCheck = false; kings[1].InCheck = false;
+  void KingPutInCheckAllPieces(SquareCollection board, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights) {
+    kings[0].InCheck = false; kings[1].InCheck = false;                             // turn off checks
+    kings[0].AttackedByThesePieces.clear(); kings[1].AttackedByThesePieces.clear(); // clear out lists
     
     for (Pawn p : pawns) {
       p.KingPutInCheck(kings);
@@ -196,9 +201,15 @@ class Piece {
     for (Bishop b : bishops) {
       b.KingPutInCheck(kings, board);
     }
+    for (Queen q : queens) {
+      q.KingPutInCheck(kings, board);
+    }
+    for (Knight kn : knights) {
+      kn.KingPutInCheck(kings);
+    }
   }
   
-  void ValidMoveAllPieces(Rook [] rooks, Bishop [] bishops, King AttackedKing, int x, int y) {
+  void ValidMoveAllPieces(Rook [] rooks, Bishop [] bishops, Queen [] queens, King AttackedKing, int x, int y) {
     for (Rook r : rooks) {
       if (isBlack) {
         if (r.isBlack) {
@@ -223,30 +234,49 @@ class Piece {
             AttackedKing.UnblockableAttackWhite = false;
       }
     }
+    for (Queen q : queens) {
+      if (isBlack) {
+        if (q.isBlack) {
+          if (q.ValidMove(board, x, y))
+            AttackedKing.UnblockableAttackBlack = false;
+        }
+        else {
+          if (q.ValidMove(board, x, y))
+            AttackedKing.UnblockableAttackWhite = false;
+        }
+      }
+    }
   }
   
-  boolean CheckForCheckmate(SquareCollection board, Rook [] rooks, King [] kings, Bishop [] bishops) {
-    if (isBlack && kings[0].Checkmate(board, rooks, bishops))
+  boolean CheckForCheckmate(SquareCollection board, Rook [] rooks, King [] kings, Bishop [] bishops, Queen [] queens) {
+    if (isBlack && kings[0].Checkmate(board, rooks, bishops, queens)) {
+      println("white checkmate");
       return true;
+    }
       
-    else if (!isBlack && kings[1].Checkmate(board,rooks, bishops))
+    else if (!isBlack && kings[1].Checkmate(board,rooks, bishops, queens)) {
+      println("black checkmate");
       return true;
+    }
     
     else return false;    
   }
   
-  void CheckIfPinned(SquareCollection board, ArrayList <Piece> pieces, Rook [] rooks, Bishop [] bishops) {
+  void CheckIfPinned(SquareCollection board, ArrayList <Piece> pieces, Rook [] rooks, Bishop [] bishops, Queen [] queens) {
     board.PinnedBlackPiece = false;
     board.PinnedWhitePiece = false;
       
     UpdateXYIndices(board);        
     UpdateOccupiedSquaresPin(board, pieces);
-    
+        
     for (Rook r : rooks) {
       r.UpdatePinnedSquares(board);
     }
     for (Bishop b : bishops) {
       b.UpdatePinnedSquares(board);
+    }   
+    for (Queen q : queens) {
+      q.UpdatePinnedSquares(board);
     }
   }
   
@@ -320,15 +350,15 @@ class Piece {
   boolean AttackingTheAttacker(King [] kings) {
     // if a king is attacked by more than one piece the only legal move is by a king
     if (kings[1].AttackedByThesePieces.size() > 1
-     || kings[0].AttackedByThesePieces.size() > 1)
-       return false;
+     || kings[0].AttackedByThesePieces.size() > 1) {
+         return false;
+     }
     
     // attacking the attacker for black
     if (isBlack) {
       if (this.x == kings[1].AttackedByThesePieces.get(0).x 
        && this.y == kings[1].AttackedByThesePieces.get(0).y)  // if coords are equal to coords of attacker
-         return true;
-       
+         return true;       
     }
     
     // attacking the attacker for white

@@ -13,23 +13,23 @@ class Pawn extends Piece //<>//
     l = 60;
   }
 
-  void draw()
-  {
+  void draw() {
     if (visible)
       image(PawnImage, x + offsetx, y + offsety, l, l);
   }
 
-  void mouseReleased(SquareCollection SquareCollection, StateChecker StateChecker, ArrayList<Piece> pieces, Pawn [] pawns, King [] kings, Rook [] rooks, Bishop [] bishops)
+  void mouseReleased(SquareCollection sc, ArrayList<Piece> pieces, Pawn [] pawns, King [] kings, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights)
   {
     if (active && visible) {
-      GetXYChange(SquareCollection, mouseX, mouseY);    // gets x and y change in indices, stored in XChange/YChange
+      GetXYChange(sc, mouseX, mouseY);    // gets x and y change in indices, stored in XChange/YChange
       LockPieceToSquare(board.squares);                 // locks piece to the middle of the square it move to
       active = false;                                   // turn off mouse activity for this piece
       
-      CheckIfPinned(board, pieces, rooks, bishops);
+      if (!kings[0].InCheck && !kings[1].InCheck)
+        CheckIfPinned(board, pieces, rooks, bishops, queens);
       
     // if legal move :
-      if (Legal(board, pieces, kings, pawns, rooks, bishops)) {  
+      if (Legal(board, kings)) {  
         if (AttackingMove) 
           Capture(pieces);
           
@@ -42,13 +42,11 @@ class Pawn extends Piece //<>//
         UpdateOccupiedSquares(board, pieces);
         UpdateOccupiedSquaresPin(board,pieces);
 
-        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
+        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops, queens, knights);
                 
-        KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops);
+        KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops, queens, knights);
                               
-       if (CheckForCheckmate(board, rooks, kings, bishops))
-          println("mate");
-
+        CheckForCheckmate(board, rooks, kings, bishops, queens);
     // if not a legal move, return piece to original coords
     } else {
         this.x = InitXCoord;
@@ -151,14 +149,11 @@ class Pawn extends Piece //<>//
     }
   }
   
-  boolean CheckBasicLegalMoves(Square [][] Squares)
-  {  
-    for (int row = 0; row < Squares.length; row++)
-    {
-      for (int col = 0; col < Squares[row].length; col++)
-      {
-        if (Squares[row][col].active) // this is the square the mouse is released on
-        {
+  boolean CheckBasicLegalMoves(Square [][] Squares) {  
+    for (int row = 0; row < Squares.length; row++) {
+      for (int col = 0; col < Squares[row].length; col++) {
+        if (Squares[row][col].active) { // this is the square the mouse is released on
+        
           if (XChange == 0 && YChange == 1 && isBlack && !Squares[row][col].OccupiedBlack && !Squares[row][col].OccupiedWhite)
             return true;
           else if (XChange == 0 && YChange == -1 && !isBlack && !Squares[row][col].OccupiedWhite && !Squares[row][col].OccupiedBlack)
@@ -190,9 +185,9 @@ class Pawn extends Piece //<>//
     return false;
   }
 
-  boolean Legal(SquareCollection board, ArrayList<Piece> Pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops)
-  {     
-    if (CheckBasicLegalMoves(board.squares) && CheckTurnColor(StateChecker) && !board.PinnedPieceMoved(isBlack)) {
+  boolean Legal(SquareCollection board, King [] kings) {     
+    
+    if (CheckBasicLegalMoves(board.squares) && CheckTurnColor(StateChecker)) {
       if (YourKingInCheck(kings)) { 
         println("here" + AttackingTheAttacker(kings) , BlockingMove(kings));
         if (AttackingTheAttacker(kings) || BlockingMove(kings))
@@ -200,7 +195,10 @@ class Pawn extends Piece //<>//
         else return false;
       }
       
-      return true; // return true if king is not in check
+      else if (!board.PinnedPieceMoved(isBlack))
+        return true; // return true if king is not in check and not pinned piece moved
+      else return false;
+      
     } else {
       println(CheckBasicLegalMoves(board.squares) + " , " + CheckTurnColor(StateChecker));
       return false;

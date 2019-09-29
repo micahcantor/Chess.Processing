@@ -28,13 +28,13 @@ class King extends Piece
     image(KingImage, x + offsetx, y + offsety, l, l);
   }
   
-  void mouseReleased(SquareCollection board, ArrayList <Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) {
+  void mouseReleased(SquareCollection board, ArrayList <Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights) {
     if (active) {      
       GetXYChange(board, mouseX, mouseY);
       LockPieceToSquare(board.squares);
       active = false;      
 
-      if (Legal(StateChecker, board, rooks, pawns, kings, bishops)) {
+      if (Legal(StateChecker, board, rooks, pawns, kings, bishops, queens)) {
         if (AttackingMove) 
           Capture(pieces);
           
@@ -49,15 +49,13 @@ class King extends Piece
         
         UpdateOccupiedSquares(board, pieces);
         
-        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
+        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops, queens, knights);
         
-        KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops);
+        KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops, queens, knights);
         
         SquareOccupiedKing(board);
 
-       if (CheckForCheckmate(board, rooks, kings, bishops))
-          println("mate");
-       else println("!mate");
+       
        
       } else {
         this.x = InitXCoord;
@@ -98,8 +96,7 @@ class King extends Piece
         }
   }
   
-  boolean Checkmate(SquareCollection board, Rook [] rooks, Bishop [] bishops)
-  {
+  boolean Checkmate(SquareCollection board, Rook [] rooks, Bishop [] bishops, Queen[] queens) {
     //If you cannot move to any unattacked squares
     CheckLegalKingMoves(board);
     
@@ -107,16 +104,16 @@ class King extends Piece
     IsPieceCaptureable(board); 
     
     //If the move cannot be blocked
-    CanMoveBeBlocked(board, rooks, bishops);
+    CanMoveBeBlocked(board, rooks, bishops, queens);
     
     if (isBlack) {
-      if (NoLegalMovesBlack && AttackingPieceUncaptureableBlack && UnblockableAttackBlack)
-        return true;
+      if (NoLegalMovesBlack && AttackingPieceUncaptureableBlack && UnblockableAttackBlack && InCheck) 
+        return true;      
     }
     
     else {
-      if (NoLegalMovesWhite && AttackingPieceUncaptureableWhite && UnblockableAttackWhite)
-        return true;
+      if (NoLegalMovesWhite && AttackingPieceUncaptureableWhite && UnblockableAttackWhite && InCheck)
+        return true;      
     }
     
     return false;
@@ -250,18 +247,24 @@ class King extends Piece
   
   void IsPieceCaptureable(SquareCollection board) {
     AttackingPieceUncaptureableBlack = true;
+    AttackingPieceUncaptureableWhite = true;
     
     for (Piece pi : AttackedByThesePieces) {
       if (pi.isBlack) {
         for (Square s : board.AttackedSquaresBlack) {
-          if (pi.x == s.x && pi.y == s.y)
-            AttackingPieceUncaptureableBlack = false;
+          if (pi.x == s.x && pi.y == s.y) {
+            AttackingPieceUncaptureableWhite = false;
+            return;
+          }
+          
         }
       }
       else {
         for (Square s : board.AttackedSquaresWhite) {
-          if (pi.x == s.x && pi.y == s.y)
-            AttackingPieceUncaptureableWhite = false;
+          if (pi.x == s.x && pi.y == s.y) {
+            AttackingPieceUncaptureableBlack = false;
+            return;
+          }
         }
       }
       
@@ -312,9 +315,6 @@ class King extends Piece
           squares[CurrentX + 1][CurrentY - 1].AttackedByBlack = true;
         } catch(IndexOutOfBoundsException e){}   
         
-        for (Square s : KingAttackedSquaresWhite) {
-          board.AttackedSquaresWhite.add(s);
-        }
       }
     }
     else //white pieces
@@ -355,9 +355,7 @@ class King extends Piece
           squares[CurrentX + 1][CurrentY - 1].AttackedByWhite = true;
         } catch(IndexOutOfBoundsException e){}
         
-        for (Square s : KingAttackedSquaresBlack) {
-          board.AttackedSquaresBlack.add(s);
-        }
+    // removed adding to master list for king
       }
     } 
     
@@ -365,29 +363,11 @@ class King extends Piece
   }
   
   
-  //* Not needed for king ??? */
-  void KingPutInCheck(King [] kings) { 
-   //kings[0] == white king, kings[1] == black king
-    if (isBlack) {
-      for (Square s : KingAttackedSquaresWhite) {
-        if (kings[0].x == s.x && kings[0].y == s.y) {
-          kings[0].InCheck = true;     
-          kings[1].AttackedByThesePieces.add(this);
-        }
-      }
-    } else {
-      for (Square s : KingAttackedSquaresBlack) {
-        if (kings[1].x == s.x && kings[1].y == s.y) {
-          kings[1].InCheck = true;
-          kings[1].AttackedByThesePieces.add(this);
-        }
-      }
-    }
-  }
-  
-  void CanMoveBeBlocked(SquareCollection board, Rook [] rooks, Bishop [] bishops) {
+  void CanMoveBeBlocked(SquareCollection board, Rook [] rooks, Bishop [] bishops, Queen [] queens) {
     UnblockableAttackBlack = true;    // attacks are by default unblockable
     UnblockableAttackWhite = true; 
+    
+    //TODO: add queens
     
     if (AttackedByThesePieces.size() == 0)  //stop function if king is not attacked
       return;
@@ -397,9 +377,77 @@ class King extends Piece
       return;      
     }
     
-    if (AttackedByThesePieces.get(0).getClass().getSimpleName().equals("Pawn")) {    // if attacked by pawn
-      //Pawn attacks can't be blocked 
+    if (AttackedByThesePieces.get(0).getClass().getSimpleName().equals("Pawn")
+    || AttackedByThesePieces.get(0).getClass().getSimpleName().equals("Knight")) {    // if attacked by pawn or knight
+      //Pawn and knight attacks can't be blocked 
       return;
+    }
+    
+    else if (AttackedByThesePieces.get(0).getClass().getSimpleName().equals("Queen")) {
+      int XDiff = AttackedByThesePieces.get(0).XInd - this.XInd; // queen x - king x
+      int YDiff = AttackedByThesePieces.get(0).YInd - this.YInd; // queen y - king y
+      
+      ///////// queen attacking from below king  /////////////
+      if (YDiff > 0) {                   
+        for (int i = this.YInd + 1; i < AttackedByThesePieces.get(0).YInd; i++) { // for each square between queen and king         
+          ValidMoveAllPieces(rooks, bishops, queens, this, this.XInd, i);                 // loops through each piece and checks
+                                                                                  // if they can move to that square
+        }          
+      }
+
+    ///////// queen attacking from the above of king ///////////////////////
+      else if (YDiff < 0) {                   
+        for (int i = this.YInd - 1 ; i > AttackedByThesePieces.get(0).YInd; i--) { // for each square between queen and king         
+          ValidMoveAllPieces(rooks, bishops, queens, this, this.XInd, i);                 // loops through each piece and checks
+                                                                                  // if they can move to that square
+        }          
+      }
+      
+    ///////////// queen attacking from left of king ////////////////////////
+      if (XDiff < 0) {                   
+        for (int i = this.XInd - 1; i > AttackedByThesePieces.get(0).XInd; i--) { // for each square between queen and king
+          ValidMoveAllPieces(rooks, bishops, queens, this, i, this.YInd);                 // loops through each piece and checks
+                                                                                  // if they can move to that square
+        }
+      }
+      
+    ///////////// queen attacking from right of king ////////////////////////
+      else if (XDiff > 0) {                   
+        for (int i = this.XInd + 1; i < AttackedByThesePieces.get(0).XInd; i++) { // for each square between queen and king
+          ValidMoveAllPieces(rooks, bishops, queens, this, i, this.YInd);                 // loops through each piece and checks
+                                                                                  // if they can move to that square
+        }
+      }
+      
+      /// queen attacking from above left of king ///
+      if (XDiff < 0 && YDiff < 0) {
+        for (int x = this.XInd - 1, y = this.YInd - 1; x > AttackedByThesePieces.get(0).XInd; x--, y--) {
+          ValidMoveAllPieces(rooks, bishops, queens, this, x, y);                         // loops through each piece and checks
+                                                                                  // if they can move to that square
+        }
+      }
+      /// queen attacking from above right of king ///
+      if (XDiff > 0 && YDiff < 0) {
+        for (int x = this.XInd + 1, y = this.YInd - 1; x < AttackedByThesePieces.get(0).XInd; x++, y--) {
+          ValidMoveAllPieces(rooks, bishops, queens, this, x, y);                         // loops through each piece and checks
+                                                                                  // if they can move to that square
+        }
+      }
+      /// queen attacking from below left of king ///
+      if (XDiff < 0 && YDiff > 0) {
+        for (int x = this.XInd - 1, y = this.YInd + 1; x > AttackedByThesePieces.get(0).XInd; x--, y++) {
+          ValidMoveAllPieces(rooks, bishops, queens, this, x, y);                         // loops through each piece and checks
+                                                                                  // if they can move to that square
+        }
+      }
+      /// queen attacking from below right of king ///
+      if (XDiff > 0 && YDiff > 0) {
+        for (int x = this.XInd + 1, y = this.YInd + 1; x < AttackedByThesePieces.get(0).XInd; x++, y++) {
+          ValidMoveAllPieces(rooks, bishops, queens, this, x, y);                         // loops through each piece and checks
+                                                                                  // if they can move to that square
+        }
+      }
+      
     }
         
     else if (AttackedByThesePieces.get(0).getClass().getSimpleName().equals("Rook")) {    // if attacked by rook
@@ -409,7 +457,7 @@ class King extends Piece
       ///////// rook attacking from below king  /////////////
       if (YDiff > 0) {                   
         for (int i = this.YInd + 1; i < AttackedByThesePieces.get(0).YInd; i++) { // for each square between rook and king         
-          ValidMoveAllPieces(rooks, bishops, this, this.XInd, i);                 // loops through each piece and checks
+          ValidMoveAllPieces(rooks, bishops, queens, this, this.XInd, i);                 // loops through each piece and checks
                                                                                   // if they can move to that square
         }          
       }
@@ -417,7 +465,7 @@ class King extends Piece
     ///////// rook attacking from the above of king ///////////////////////
       else if (YDiff < 0) {                   
         for (int i = this.YInd - 1 ; i > AttackedByThesePieces.get(0).YInd; i--) { // for each square between rook and king         
-          ValidMoveAllPieces(rooks, bishops, this, this.XInd, i);                 // loops through each piece and checks
+          ValidMoveAllPieces(rooks, bishops, queens, this, this.XInd, i);                 // loops through each piece and checks
                                                                                   // if they can move to that square
         }          
       }
@@ -425,7 +473,7 @@ class King extends Piece
     ///////////// rook attacking from left of king ////////////////////////
       if (XDiff < 0) {                   
         for (int i = this.XInd - 1; i > AttackedByThesePieces.get(0).XInd; i--) { // for each square between rook and king
-          ValidMoveAllPieces(rooks, bishops, this, i, this.YInd);                 // loops through each piece and checks
+          ValidMoveAllPieces(rooks, bishops, queens, this, i, this.YInd);                 // loops through each piece and checks
                                                                                   // if they can move to that square
         }
       }
@@ -433,7 +481,7 @@ class King extends Piece
     ///////////// rook attacking from right of king ////////////////////////
       else if (XDiff > 0) {                   
         for (int i = this.XInd + 1; i < AttackedByThesePieces.get(0).XInd; i++) { // for each square between rook and king
-          ValidMoveAllPieces(rooks, bishops, this, i, this.YInd);                 // loops through each piece and checks
+          ValidMoveAllPieces(rooks, bishops, queens, this, i, this.YInd);                 // loops through each piece and checks
                                                                                   // if they can move to that square
         }
       }
@@ -446,28 +494,28 @@ class King extends Piece
       /// Bishop attacking from above left of king ///
       if (XDiff < 0 && YDiff < 0) {
         for (int x = this.XInd - 1, y = this.YInd - 1; x > AttackedByThesePieces.get(0).XInd; x--, y--) {
-          ValidMoveAllPieces(rooks, bishops, this, x, y);                         // loops through each piece and checks
+          ValidMoveAllPieces(rooks, bishops, queens, this, x, y);                         // loops through each piece and checks
                                                                                   // if they can move to that square
         }
       }
       /// Bishop attacking from above right of king ///
       if (XDiff > 0 && YDiff < 0) {
         for (int x = this.XInd + 1, y = this.YInd - 1; x < AttackedByThesePieces.get(0).XInd; x++, y--) {
-          ValidMoveAllPieces(rooks, bishops, this, x, y);                         // loops through each piece and checks
+          ValidMoveAllPieces(rooks, bishops, queens, this, x, y);                         // loops through each piece and checks
                                                                                   // if they can move to that square
         }
       }
       /// Bishop attacking from below left of king ///
       if (XDiff < 0 && YDiff > 0) {
         for (int x = this.XInd - 1, y = this.YInd + 1; x > AttackedByThesePieces.get(0).XInd; x--, y++) {
-          ValidMoveAllPieces(rooks, bishops, this, x, y);                         // loops through each piece and checks
+          ValidMoveAllPieces(rooks, bishops, queens, this, x, y);                         // loops through each piece and checks
                                                                                   // if they can move to that square
         }
       }
       /// Bishop attacking from below right of king ///
       if (XDiff > 0 && YDiff > 0) {
         for (int x = this.XInd + 1, y = this.YInd + 1; x < AttackedByThesePieces.get(0).XInd; x++, y++) {
-          ValidMoveAllPieces(rooks, bishops, this, x, y);                         // loops through each piece and checks
+          ValidMoveAllPieces(rooks, bishops, queens, this, x, y);                         // loops through each piece and checks
                                                                                   // if they can move to that square
         }
       }
@@ -506,7 +554,7 @@ class King extends Piece
       return false;
     }
   }
-  boolean CheckBasicLegalMoves(Square [][] Squares, Rook [] rooks, Pawn [] pawns, King [] kings, Bishop [] bishops) { 
+  boolean CheckBasicLegalMoves(Square [][] Squares, Rook [] rooks, Pawn [] pawns, King [] kings, Bishop [] bishops, Queen [] queens) { 
     EmptyCastleLane(Squares); // checks to see if empty lanes are open for white or black to castle
                               // turns on booleans kingside/queenside legal for either color
     
@@ -535,22 +583,22 @@ class King extends Piece
           }
           
           else if (FirstMove && !isBlack && XChange == -2 && rooks[0].FirstMove && QueensideLegalWhite && !InCheck) {    //Queenside White Castle  
-            rooks[0].CastleMove(kings, pawns, rooks, bishops);
+            rooks[0].CastleMove(kings, pawns, rooks, bishops, queens);
             return true;
           }
           
           else if (FirstMove && !isBlack && XChange == 2 && rooks[1].FirstMove && KingsideLegalWhite && !InCheck) {      //Kingside White Castle
-            rooks[1].CastleMove(kings, pawns, rooks, bishops);
+            rooks[1].CastleMove(kings, pawns, rooks, bishops, queens);
             return true;
           }
           
           else if (FirstMove && isBlack && XChange == -2 && rooks[2].FirstMove && QueensideLegalBlack && !InCheck) {    // Queenside Black Castle
-            rooks[2].CastleMove(kings, pawns, rooks, bishops);
+            rooks[2].CastleMove(kings, pawns, rooks, bishops, queens);
             return true;
           }
           
           else if (FirstMove && isBlack && XChange == 2 && rooks[3].FirstMove && KingsideLegalBlack && !InCheck) {      // Kingside Black Castle
-            rooks[3].CastleMove(kings, pawns, rooks, bishops);
+            rooks[3].CastleMove(kings, pawns, rooks, bishops, queens);
             return true;
           }
            
@@ -568,8 +616,8 @@ class King extends Piece
     return false;   
   } 
   
-  boolean Legal(StateChecker StateChecker, SquareCollection board, Rook [] rooks, Pawn [] pawns, King [] kings, Bishop [] bishops) {
-    if (CheckBasicLegalMoves(board.squares, rooks, pawns, kings, bishops) && CheckTurnColor(StateChecker) && !IsSquareAttacked(board.AttackedSquaresWhite, board.AttackedSquaresBlack))       
+  boolean Legal(StateChecker StateChecker, SquareCollection board, Rook [] rooks, Pawn [] pawns, King [] kings, Bishop [] bishops, Queen [] queens) {
+    if (CheckBasicLegalMoves(board.squares, rooks, pawns, kings, bishops, queens) && CheckTurnColor(StateChecker) && !IsSquareAttacked(board.AttackedSquaresWhite, board.AttackedSquaresBlack))       
       return true;
     else 
       return false;

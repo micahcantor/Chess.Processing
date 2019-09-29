@@ -9,8 +9,7 @@ class PawnCollection
     BlackPawn = _BlackPawn;
   }
 
-  void createPawns(ArrayList<Piece> pieces)
-  {
+  void createPawns(ArrayList<Piece> pieces) {
     pawns = new Pawn[16];
     int x, y, FileCounterBlack = 0, FileCounterWhite = 0;
     for (int i = 0; i < pawns.length; i++) {
@@ -52,9 +51,9 @@ class PawnCollection
          p.mouseDragged(mousex,mousey); 
        }
      }
-  void mouseReleased(SquareCollection SquareCollection, StateChecker StateChecker, ArrayList<Piece> pieces, Pawn [] pawns, King [] kings, Rook [] rooks, Bishop [] bishops) { 
+  void mouseReleased(SquareCollection sc, ArrayList<Piece> pieces, Pawn [] pawns, King [] kings, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights) { 
       for (Pawn p : pawns) {
-        p.mouseReleased(SquareCollection, StateChecker, pieces, pawns, kings, rooks, bishops);
+        p.mouseReleased(sc, pieces, pawns, kings, rooks, bishops, queens, knights);
       }
     }
 }

@@ -2,8 +2,8 @@ class Bishop extends Piece {
   PImage BishopImage;
   ArrayList <Square> BishopAttackedSquaresWhite = new ArrayList();
   ArrayList <Square> BishopAttackedSquaresBlack = new ArrayList();
-  boolean StopDownRight = false, StopDownLeft = false, StopUpRight = false, StopUpLeft = false;
   boolean StopUpRightPin = false, StopDownRightPin = false, StopDownLeftPin = false, StopUpLeftPin = false;
+  boolean StopDownRight = false, StopDownLeft = false, StopUpRight = false, StopUpLeft = false;
   
   public Bishop(PImage _BishopImage, boolean _isBlack, float _x, float _y) {
     BishopImage = _BishopImage;
@@ -18,15 +18,16 @@ class Bishop extends Piece {
       image(BishopImage, x + offsetx, y + offsety, l, l);
   }
   
-  void mouseReleased(SquareCollection board, ArrayList <Piece> pieces, Rook [] rooks, King [] kings, Pawn [] pawns, Bishop [] bishops) {
+  void mouseReleased(SquareCollection board, ArrayList <Piece> pieces, Rook [] rooks, King [] kings, Pawn [] pawns, Bishop [] bishops, Queen [] queens, Knight [] knights) {
     if (active && visible) {      
       GetXYChange(board, mouseX, mouseY);
       LockPieceToSquare(board.squares);
       active = false;
       
-      CheckIfPinned(board, pieces, rooks, bishops);
+      if (!kings[0].InCheck && !kings[1].InCheck)
+        CheckIfPinned(board, pieces, rooks, bishops, queens);
       
-      if (Legal(board, pieces, kings, pawns, rooks, bishops)) 
+      if (Legal(board, kings)) 
       { 
         if (AttackingMove) 
           Capture(pieces);
@@ -40,45 +41,48 @@ class Bishop extends Piece {
         UpdateOccupiedSquares(board, pieces);
         UpdateOccupiedSquaresPin(board,pieces);
         
-        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
+        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops, queens, knights);
         
-        UpdatePinnedSquares(board);
+        KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops, queens, knights); 
+        
+        if (!kings[0].InCheck && !kings[1].InCheck)
+          UpdatePinnedSquares(board);
           
-        KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops); 
-        
+                
      } else {
         this.x = InitXCoord;
         this.y = InitYCoord;
       }
     }
   }
-  
+
   void UpdateAttackedSquares(SquareCollection board) {
-  
-    /* clear out old lists */
-    ClearAttackedSquares(BishopAttackedSquaresWhite, BishopAttackedSquaresBlack, true);
     
+    /* clear out old lists */
+    ClearAttackedSquares(BishopAttackedSquaresWhite, BishopAttackedSquaresBlack, isBlack);
+    
+    StopDownRight = false; StopDownLeft = false; StopUpRight = false; StopUpLeft = false;
     //Add all squares that rook attacks
     if (visible) {
       for (int i = 1; i < 8; i++) {
         if (!StopUpRight) 
           AttackedSqAlg(board.squares, 1, -1, i);
-        else if (!StopDownRight) 
+        if (!StopDownRight) 
           AttackedSqAlg(board.squares, 1, 1, i);
-        else if (!StopDownLeft) 
+        if (!StopDownLeft) 
           AttackedSqAlg(board.squares, -1, 1, i);
-        else if (!StopUpLeft) 
+        if (!StopUpLeft) 
           AttackedSqAlg(board.squares, -1 , -1, i);        
       }
       
       if (isBlack) {
-        for (Square s : BishopAttackedSquaresBlack) {
-          board.AttackedSquaresBlack.add(s);
+        for (Square s : BishopAttackedSquaresWhite) {
+          board.AttackedSquaresWhite.add(s);
         }
       }
       else {
-        for (Square s : BishopAttackedSquaresWhite) {
-          board.AttackedSquaresWhite.add(s);
+        for (Square s : BishopAttackedSquaresBlack) {
+          board.AttackedSquaresBlack.add(s);
         }
       } 
         
@@ -178,7 +182,7 @@ class Bishop extends Piece {
           return;
         }
         
-        if (board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedWhiteKing) {
+        else if (board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedWhiteKing) {
           board.PinnedWhitePiece = true;
           //println("pinned pc");
           return;
@@ -206,7 +210,6 @@ class Bishop extends Piece {
         
         else if (board.squares[CurrentX + (i * XPlus)][CurrentY + (i * YPlus)].OccupiedBlackKing) {
           board.PinnedBlackPiece = true;
-          //println("pinned pc"  );
           return;
         }
                                                           
@@ -324,22 +327,14 @@ class Bishop extends Piece {
       for (int col = 0; col < board.squares[row].length; col++) {
         if (board.squares[row][col].active) { // this is the square the mouse is released on
         
-          if ((XChange > 0 && YChange < 0)) { // If bishop is moving up right
-            return BasicLegalMovesAlg(row, col, -1, 1, YChange);
-          }
-          
-          if ((XChange < 0 && YChange < 0)) { // If rook is moving up left
-            return BasicLegalMovesAlg(row, col, 1, 1, YChange);
-          }
-          
-         if ((XChange > 0 && YChange > 0)) { // If rook is moving down right
-            return BasicLegalMovesAlg(row, col, -1, -1, XChange);
-          }
-          
-          if ((XChange < 0 && YChange > 0)) { // If rook is moving down left
-            return BasicLegalMovesAlg(row, col, 1, -1, XChange);            
-          }
-          
+          if ((XChange > 0 && YChange < 0))  // If bishop is moving up right
+            return BasicLegalMovesAlg(row, col, -1, 1, YChange);                    
+          if ((XChange < 0 && YChange < 0))  // If rook is moving up left
+            return BasicLegalMovesAlg(row, col, 1, 1, YChange);                    
+         if ((XChange > 0 && YChange > 0))  // If rook is moving down right
+            return BasicLegalMovesAlg(row, col, -1, -1, XChange);          
+          if ((XChange < 0 && YChange > 0))  // If rook is moving down left
+            return BasicLegalMovesAlg(row, col, 1, -1, XChange);                      
         }
       }
     }
@@ -373,17 +368,19 @@ class Bishop extends Piece {
     return true; // if there is nothing in the way then return true;
   }
   
-   boolean Legal(SquareCollection board, ArrayList<Piece> Pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) { 
+   boolean Legal(SquareCollection board, King [] kings) { 
     
-    if (CheckBasicLegalMoves(board) && CheckTurnColor(StateChecker) && !board.PinnedPieceMoved(isBlack)) {      
-      if (YourKingInCheck(kings)) {         
-        if (AttackingTheAttacker(kings) || BlockingMove(kings)) {
-          return true;      
-        }
+   if (CheckBasicLegalMoves(board) && CheckTurnColor(StateChecker)) {
+      if (YourKingInCheck(kings)) { 
+        if (AttackingTheAttacker(kings) || BlockingMove(kings))
+          return true;       
         else return false;
       }
       
-      return true; // return true if king is not in check
+      else if (!board.PinnedPieceMoved(isBlack))
+        return true;           // return true if king is not in check and not pinned piece moved
+      else return false;
+      
     } else { 
       return false;
    }

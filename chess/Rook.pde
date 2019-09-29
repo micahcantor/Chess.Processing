@@ -3,9 +3,8 @@ class Rook extends Piece {
   PImage RookImage;
   ArrayList <Square> RookAttackedSquaresWhite = new ArrayList();
   ArrayList <Square> RookAttackedSquaresBlack = new ArrayList();
-  boolean StopUp = false , StopDown = false, StopRight = false, StopLeft = false;
   boolean StopUpPin = false, StopDownPin = false, StopRightPin = false, StopLeftPin = false;
-
+  boolean StopUp = false , StopDown = false, StopRight = false, StopLeft = false;   
   
   public Rook(PImage _RookImage, boolean _isBlack, float _x, float _y) {
     RookImage = _RookImage;
@@ -20,13 +19,14 @@ class Rook extends Piece {
       image(RookImage, x + offsetx, y + offsety, l, l);
   }
   
-  void mouseReleased(SquareCollection board, ArrayList<Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) {
+  void mouseReleased(SquareCollection board, ArrayList<Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights) {
     if (active && visible) {      
       GetXYChange(board, mouseX, mouseY);
       LockPieceToSquare(board.squares);
       active = false;
       
-      CheckIfPinned(board, pieces, rooks, bishops);
+      if (!kings[0].InCheck && !kings[1].InCheck)
+        CheckIfPinned(board, pieces, rooks, bishops, queens);
       
       if (Legal(board, pieces, kings, pawns, rooks, bishops)) 
       {  
@@ -42,11 +42,12 @@ class Rook extends Piece {
         UpdateOccupiedSquares(board, pieces);
         UpdateOccupiedSquaresPin(board,pieces);
         
-        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops);
+        UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops, queens, knights);
         
-        UpdatePinnedSquares(board);
+        KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops, queens, knights);
         
-        KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops);
+        if (!kings[0].InCheck && !kings[1].InCheck)
+          UpdatePinnedSquares(board);
                                      
      } else {
         this.x = InitXCoord;
@@ -67,9 +68,10 @@ class Rook extends Piece {
   }
   
   void UpdateAttackedSquares(SquareCollection board) {
-           
+        
     /* clear out old lists */
-    ClearAttackedSquares(RookAttackedSquaresWhite, RookAttackedSquaresBlack, true);
+    ClearAttackedSquares(RookAttackedSquaresWhite, RookAttackedSquaresBlack, isBlack);
+    StopUp = false ; StopDown = false; StopRight = false; StopLeft = false;   
     
     //Add all squares that rook attacks
     if (visible) {
@@ -77,25 +79,25 @@ class Rook extends Piece {
         if (!StopRight) {
           AttackedSqAlg(board.squares, 1, 0, i);
         }
-        else if (!StopLeft) {
+        if (!StopLeft) {
           AttackedSqAlg(board.squares, -1, 0, i);
         }
-        else if (!StopDown) {
+        if (!StopDown) {
           AttackedSqAlg(board.squares, 0, 1, i);
         }
-        else if (!StopUp) {
+        if (!StopUp) {
           AttackedSqAlg(board.squares, 0, -1, i);
         }          
       }
       
       if (isBlack) {
-        for (Square s : RookAttackedSquaresBlack) {
-          board.AttackedSquaresBlack.add(s);
+        for (Square s : RookAttackedSquaresWhite) {
+          board.AttackedSquaresWhite.add(s);
         }
       }
       else {
-        for (Square s : RookAttackedSquaresWhite) {
-          board.AttackedSquaresWhite.add(s);
+        for (Square s : RookAttackedSquaresBlack) {
+          board.AttackedSquaresBlack.add(s);
         }
       } 
         
@@ -164,10 +166,8 @@ class Rook extends Piece {
             PinnedSqAlg(board, i, 0, 1);
           if (!StopUpPin)
             PinnedSqAlg(board, i, 0, -1);
-        }
-          
-     }               
-    
+        }          
+     }                   
   }
   
    void PinnedSqAlg(SquareCollection board, int i, int XPlus, int YPlus) {
@@ -300,7 +300,7 @@ class Rook extends Piece {
         
   }
   
-  void CastleMove(King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) {
+  void CastleMove(King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, Queen [] queens) {
     
     // Move Rook
     if (x == 0)
@@ -318,6 +318,12 @@ class Rook extends Piece {
     for (Pawn p : pawns) {
       p.UpdateAttackedSquares(board);
     }
+    for (Bishop b : bishops) {
+      b.UpdateAttackedSquares(board);
+    }
+    for (Queen q : queens) {
+      q.UpdateAttackedSquares(board);
+    }
     
     FirstMove = false;
     
@@ -326,7 +332,7 @@ class Rook extends Piece {
     
     KingPutInCheck(kings, board);
       
-    if (CheckForCheckmate(board, rooks, kings, bishops))
+    if (CheckForCheckmate(board, rooks, kings, bishops, queens))
       println("mate");
   }
   
@@ -419,14 +425,17 @@ class Rook extends Piece {
    
    boolean Legal(SquareCollection board, ArrayList<Piece> Pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops) { 
 
-    if (CheckBasicLegalMoves(board) && CheckTurnColor(StateChecker) && !board.PinnedPieceMoved(isBlack)) {
+    if (CheckBasicLegalMoves(board) && CheckTurnColor(StateChecker)) {
       if (YourKingInCheck(kings)) { 
         if (AttackingTheAttacker(kings) || BlockingMove(kings))
           return true;       
         else return false;
       }
       
-      return true; // return true if king is not in check
+      else if (!board.PinnedPieceMoved(isBlack))
+        return true;           // return true if king is not in check and not pinned piece moved
+      else return false;
+      
     } else {
       println(CheckBasicLegalMoves(board) + " , " + CheckTurnColor(StateChecker));
       return false;
