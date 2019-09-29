@@ -33,7 +33,7 @@ void setup() {
   PImage WhiteQueen = loadImage("icons/WhiteQueen.png");
   PImage BlackQueen = loadImage("icons/BlackQueen.png");
   
-  pawns   = new PawnCollection(WhitePawn, BlackPawn);
+  pawns   = new PawnCollection(WhitePawn, BlackPawn, WhiteQueen, BlackQueen);
   kings   = new KingCollection(WhiteKing, BlackKing);
   rooks   = new RookCollection(WhiteRook, BlackRook);
   bishops = new BishopCollection(WhiteBishop, BlackBishop);
@@ -130,7 +130,7 @@ void mouseReleased()
 {
   pawns.mouseReleased(board, pieces, pawns.pawns, kings.kings, rooks.rooks, bishops.bishops, queens.queens, knights.knights);
   kings.mouseReleased(board, pieces, kings.kings, pawns.pawns, rooks.rooks, bishops.bishops, queens.queens, knights.knights);
-  rooks.mouseReleased(board, pieces, kings.kings, pawns.pawns, rooks.rooks, bishops.bishops, queens.queens, knights.knights);
+  rooks.mouseReleased(board, pieces, kings.kings, pawns.pawns, rooks.rooks, bishops.bishops, queens.queens, knights.knights );
   knights.mouseReleased(board, pieces, pawns.pawns, kings.kings, rooks.rooks, bishops.bishops, queens.queens, knights.knights);
   bishops.mouseReleased(board, pieces, rooks.rooks, kings.kings, pawns.pawns, bishops.bishops, queens.queens, knights.knights);
   queens.mouseReleased(board, StateChecker, pieces, kings.kings, pawns.pawns, rooks.rooks, bishops.bishops, queens.queens, knights.knights);  

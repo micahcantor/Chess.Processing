@@ -39,7 +39,7 @@ class KnightCollection {
          kn.mouseDragged(mousex,mousey); 
        }
      }
-  void mouseReleased(SquareCollection sc, ArrayList<Piece> pieces, Pawn [] pawns, King [] kings, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights) { 
+  void mouseReleased(SquareCollection sc, ArrayList<Piece> pieces, Pawn [] pawns, King [] kings, Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens, Knight [] knights) { 
       for (Knight kn : knights) {
         kn.mouseReleased(sc, pieces, pawns, kings, rooks, bishops, queens, knights);
       }

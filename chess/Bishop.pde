@@ -18,7 +18,7 @@ class Bishop extends Piece {
       image(BishopImage, x + offsetx, y + offsety, l, l);
   }
   
-  void mouseReleased(SquareCollection board, ArrayList <Piece> pieces, Rook [] rooks, King [] kings, Pawn [] pawns, Bishop [] bishops, Queen [] queens, Knight [] knights) {
+  void mouseReleased(SquareCollection board, ArrayList <Piece> pieces, Rook [] rooks, King [] kings, Pawn [] pawns, Bishop [] bishops, ArrayList <Queen> queens, Knight [] knights) {
     if (active && visible) {      
       GetXYChange(board, mouseX, mouseY);
       LockPieceToSquare(board.squares);

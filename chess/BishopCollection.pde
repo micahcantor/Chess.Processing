@@ -40,7 +40,7 @@ class BishopCollection
          b.mouseDragged(mousex,mousey); 
        }
      }
-  void mouseReleased(SquareCollection board, ArrayList<Piece> pieces, Rook [] rooks, King [] kings, Pawn [] pawns, Bishop [] bishops, Queen [] queens, Knight [] knights) { 
+  void mouseReleased(SquareCollection board, ArrayList<Piece> pieces, Rook [] rooks, King [] kings, Pawn [] pawns, Bishop [] bishops, ArrayList <Queen> queens, Knight [] knights) { 
       for (Bishop b : bishops) {
         b.mouseReleased(board, pieces, rooks, kings, pawns, bishops, queens, knights);
       }

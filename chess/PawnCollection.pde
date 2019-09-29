@@ -3,10 +3,13 @@ class PawnCollection
 {
   Pawn [] pawns;
   PImage WhitePawn, BlackPawn;
+  PImage WhiteQueen, BlackQueen;
   
-  PawnCollection(PImage _WhitePawn, PImage _BlackPawn) {
+  PawnCollection(PImage _WhitePawn, PImage _BlackPawn, PImage _WhiteQueen, PImage _BlackQueen) {
     WhitePawn = _WhitePawn;
     BlackPawn = _BlackPawn;
+    WhiteQueen = _WhiteQueen;
+    BlackQueen = _BlackQueen;
   }
 
   void createPawns(ArrayList<Piece> pieces) {
@@ -16,13 +19,13 @@ class PawnCollection
       if (i < 8) {
         x = 60 * (FileCounterBlack); //may change eventually to starting square x and starting square y
         y = 60;
-        pawns[i] = new Pawn(BlackPawn, true, x, y);
+        pawns[i] = new Pawn(BlackPawn, BlackQueen, true, x, y);
         FileCounterBlack++;
       }
       else {
         x = 60 * (FileCounterWhite);
         y = 360;
-        pawns[i] = new Pawn(WhitePawn, false, x, y);
+        pawns[i] = new Pawn(WhitePawn, WhiteQueen, false, x, y);
         FileCounterWhite++;
       }
     }
@@ -51,7 +54,7 @@ class PawnCollection
          p.mouseDragged(mousex,mousey); 
        }
      }
-  void mouseReleased(SquareCollection sc, ArrayList<Piece> pieces, Pawn [] pawns, King [] kings, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights) { 
+  void mouseReleased(SquareCollection sc, ArrayList<Piece> pieces, Pawn [] pawns, King [] kings, Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens, Knight [] knights) { 
       for (Pawn p : pawns) {
         p.mouseReleased(sc, pieces, pawns, kings, rooks, bishops, queens, knights);
       }

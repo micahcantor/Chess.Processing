@@ -1,6 +1,6 @@
 class QueenCollection
 {
-  Queen [] queens;
+  ArrayList <Queen> queens;
   PImage WhiteQueen, BlackQueen;
   
   public QueenCollection(PImage _WhiteQueen, PImage _BlackQueen) {
@@ -9,9 +9,9 @@ class QueenCollection
   }
 
   void createQueens(ArrayList<Piece> pieces) {
-    queens    = new Queen [2];
-    queens[0] = new Queen(WhiteQueen, false, 180, 420);
-    queens[1] = new Queen(BlackQueen, true, 180, 0);
+    queens    = new ArrayList<Queen>();
+    queens.add(new Queen(WhiteQueen, false, 180, 420));
+    queens.add(new Queen(BlackQueen, true, 180, 0));
     
     for (Queen q : queens) {
       pieces.add(q);
@@ -38,7 +38,7 @@ class QueenCollection
          q.mouseDragged(mousex,mousey); 
        }
    }
-  void mouseReleased(SquareCollection board, StateChecker sc, ArrayList<Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights) { 
+  void mouseReleased(SquareCollection board, StateChecker sc, ArrayList<Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens, Knight [] knights) { 
       for (Queen q : queens) {
         q.mouseReleased(board, sc, pieces, kings, pawns, rooks, bishops, queens, knights);
       }

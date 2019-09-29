@@ -38,7 +38,7 @@ class KingCollection
          k.mouseDragged(mousex,mousey); 
        }
      }
-  void mouseReleased(SquareCollection board, ArrayList <Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights) { 
+  void mouseReleased(SquareCollection board, ArrayList <Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens, Knight [] knights) { 
       for (King k : kings){
         k.mouseReleased(board, pieces, kings, pawns, rooks, bishops, queens, knights);
       }

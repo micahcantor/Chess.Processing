@@ -1,12 +1,14 @@
 class Pawn extends Piece //<>//
 {
   PImage PawnImage;
+  PImage QueenImage;
   ArrayList <Square> PawnAttackedSquaresWhite = new ArrayList();
   ArrayList <Square> PawnAttackedSquaresBlack = new ArrayList();
   boolean OnAttackedSquare;
 
-  public Pawn(PImage _PawnImage, boolean _isBlack, float _x, float _y) {
+  public Pawn(PImage _PawnImage, PImage _QueenImage, boolean _isBlack, float _x, float _y) {
     PawnImage = _PawnImage;
+    QueenImage = _QueenImage;
     isBlack = _isBlack;
     x = _x;
     y = _y;
@@ -18,7 +20,7 @@ class Pawn extends Piece //<>//
       image(PawnImage, x + offsetx, y + offsety, l, l);
   }
 
-  void mouseReleased(SquareCollection sc, ArrayList<Piece> pieces, Pawn [] pawns, King [] kings, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights)
+  void mouseReleased(SquareCollection sc, ArrayList<Piece> pieces, Pawn [] pawns, King [] kings, Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens, Knight [] knights)
   {
     if (active && visible) {
       GetXYChange(sc, mouseX, mouseY);    // gets x and y change in indices, stored in XChange/YChange
@@ -36,6 +38,8 @@ class Pawn extends Piece //<>//
         AttackingMove = false;
         
         StateChecker.FlipColor();
+        
+        Promotion(QueenImage, queens, pieces);
           
         UpdateXYIndices(board);
          
@@ -45,7 +49,7 @@ class Pawn extends Piece //<>//
         UpdateAllPiecesAttackedSquares(board, kings, pawns, rooks, bishops, queens, knights);
                 
         KingPutInCheckAllPieces(board, kings, pawns, rooks, bishops, queens, knights);
-                              
+                                      
         CheckForCheckmate(board, rooks, kings, bishops, queens);
     // if not a legal move, return piece to original coords
     } else {
@@ -137,15 +141,19 @@ class Pawn extends Piece //<>//
     }
   }
   
-  void Promotion()
+  void Promotion(PImage QueenImage, ArrayList<Queen> queens, ArrayList <Piece> pieces)
   {
     if (isBlack && y == 540) {
-      //promote
+      visible = false;
+      Queen PromotedQ = new Queen(QueenImage, true, x, y);
+      pieces.add(PromotedQ);
+      queens.add(PromotedQ);
     }
-    else
-    {
-      if (y == 0) {}
-        //Promote
+    if (!isBlack && y == 0) {
+      visible = false; 
+      Queen PromotedQ = new Queen(QueenImage, false, x, y);
+      pieces.add(PromotedQ);
+      queens.add(PromotedQ);
     }
   }
   

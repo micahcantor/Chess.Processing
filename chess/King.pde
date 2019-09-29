@@ -28,7 +28,7 @@ class King extends Piece
     image(KingImage, x + offsetx, y + offsety, l, l);
   }
   
-  void mouseReleased(SquareCollection board, ArrayList <Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights) {
+  void mouseReleased(SquareCollection board, ArrayList <Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens, Knight [] knights) {
     if (active) {      
       GetXYChange(board, mouseX, mouseY);
       LockPieceToSquare(board.squares);
@@ -96,7 +96,7 @@ class King extends Piece
         }
   }
   
-  boolean Checkmate(SquareCollection board, Rook [] rooks, Bishop [] bishops, Queen[] queens) {
+  boolean Checkmate(SquareCollection board, Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens) {
     //If you cannot move to any unattacked squares
     CheckLegalKingMoves(board);
     
@@ -363,7 +363,7 @@ class King extends Piece
   }
   
   
-  void CanMoveBeBlocked(SquareCollection board, Rook [] rooks, Bishop [] bishops, Queen [] queens) {
+  void CanMoveBeBlocked(SquareCollection board, Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens) {
     UnblockableAttackBlack = true;    // attacks are by default unblockable
     UnblockableAttackWhite = true; 
     
@@ -554,7 +554,7 @@ class King extends Piece
       return false;
     }
   }
-  boolean CheckBasicLegalMoves(Square [][] Squares, Rook [] rooks, Pawn [] pawns, King [] kings, Bishop [] bishops, Queen [] queens) { 
+  boolean CheckBasicLegalMoves(Square [][] Squares, Rook [] rooks, Pawn [] pawns, King [] kings, Bishop [] bishops, ArrayList <Queen> queens) { 
     EmptyCastleLane(Squares); // checks to see if empty lanes are open for white or black to castle
                               // turns on booleans kingside/queenside legal for either color
     
@@ -616,7 +616,7 @@ class King extends Piece
     return false;   
   } 
   
-  boolean Legal(StateChecker StateChecker, SquareCollection board, Rook [] rooks, Pawn [] pawns, King [] kings, Bishop [] bishops, Queen [] queens) {
+  boolean Legal(StateChecker StateChecker, SquareCollection board, Rook [] rooks, Pawn [] pawns, King [] kings, Bishop [] bishops, ArrayList <Queen> queens) {
     if (CheckBasicLegalMoves(board.squares, rooks, pawns, kings, bishops, queens) && CheckTurnColor(StateChecker) && !IsSquareAttacked(board.AttackedSquaresWhite, board.AttackedSquaresBlack))       
       return true;
     else 

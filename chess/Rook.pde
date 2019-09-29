@@ -19,7 +19,7 @@ class Rook extends Piece {
       image(RookImage, x + offsetx, y + offsety, l, l);
   }
   
-  void mouseReleased(SquareCollection board, ArrayList<Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights) {
+  void mouseReleased(SquareCollection board, ArrayList<Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens, Knight [] knights) {
     if (active && visible) {      
       GetXYChange(board, mouseX, mouseY);
       LockPieceToSquare(board.squares);
@@ -300,7 +300,7 @@ class Rook extends Piece {
         
   }
   
-  void CastleMove(King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, Queen [] queens) {
+  void CastleMove(King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens) {
     
     // Move Rook
     if (x == 0)

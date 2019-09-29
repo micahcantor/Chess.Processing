@@ -167,7 +167,7 @@ class Piece {
     }
   }
   
-  void UpdateAllPiecesAttackedSquares(SquareCollection board, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights) {
+  void UpdateAllPiecesAttackedSquares(SquareCollection board, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens, Knight [] knights) {
     for (King k : kings) {
       k.UpdateAttackedSquares(board);
     }
@@ -188,7 +188,7 @@ class Piece {
     }
   }
   
-  void KingPutInCheckAllPieces(SquareCollection board, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights) {
+  void KingPutInCheckAllPieces(SquareCollection board, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens, Knight [] knights) {
     kings[0].InCheck = false; kings[1].InCheck = false;                             // turn off checks
     kings[0].AttackedByThesePieces.clear(); kings[1].AttackedByThesePieces.clear(); // clear out lists
     
@@ -209,7 +209,7 @@ class Piece {
     }
   }
   
-  void ValidMoveAllPieces(Rook [] rooks, Bishop [] bishops, Queen [] queens, King AttackedKing, int x, int y) {
+  void ValidMoveAllPieces(Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens, King AttackedKing, int x, int y) {
     for (Rook r : rooks) {
       if (isBlack) {
         if (r.isBlack) {
@@ -248,7 +248,7 @@ class Piece {
     }
   }
   
-  boolean CheckForCheckmate(SquareCollection board, Rook [] rooks, King [] kings, Bishop [] bishops, Queen [] queens) {
+  boolean CheckForCheckmate(SquareCollection board, Rook [] rooks, King [] kings, Bishop [] bishops, ArrayList <Queen> queens) {
     if (isBlack && kings[0].Checkmate(board, rooks, bishops, queens)) {
       println("white checkmate");
       return true;
@@ -262,7 +262,7 @@ class Piece {
     else return false;    
   }
   
-  void CheckIfPinned(SquareCollection board, ArrayList <Piece> pieces, Rook [] rooks, Bishop [] bishops, Queen [] queens) {
+  void CheckIfPinned(SquareCollection board, ArrayList <Piece> pieces, Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens) {
     board.PinnedBlackPiece = false;
     board.PinnedWhitePiece = false;
       

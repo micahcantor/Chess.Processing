@@ -22,7 +22,7 @@ class Queen extends Piece {
       image(QueenImage, x + offsetx, y + offsety, l, l);
   }
   
-  void mouseReleased(SquareCollection board, StateChecker sc, ArrayList<Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights) {
+  void mouseReleased(SquareCollection board, StateChecker sc, ArrayList<Piece> pieces, King [] kings, Pawn [] pawns, Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens, Knight [] knights) {
     if (active && visible) {      
       GetXYChange(board, mouseX, mouseY);
       LockPieceToSquare(board.squares);

@@ -16,7 +16,7 @@ class Knight extends Piece {
       image(KnightImage, x + offsetx, y + offsety, l, l);
   }
   
-  void mouseReleased(SquareCollection sc, ArrayList<Piece> pieces, Pawn [] pawns, King [] kings, Rook [] rooks, Bishop [] bishops, Queen [] queens, Knight [] knights) { 
+  void mouseReleased(SquareCollection sc, ArrayList<Piece> pieces, Pawn [] pawns, King [] kings, Rook [] rooks, Bishop [] bishops, ArrayList <Queen> queens, Knight [] knights) { 
     if (active && visible) {
       GetXYChange(sc, mouseX, mouseY);    // gets x and y change in indices, stored in XChange/YChange
       LockPieceToSquare(board.squares);                 // locks piece to the middle of the square it move to
